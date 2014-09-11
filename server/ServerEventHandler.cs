@@ -1,82 +1,35 @@
-/*
- * TeamSpeak 3 server minimal sample C#
- *
- * Copyright (c) 2007-2010 TeamSpeak-Systems
- */
-
-using System;
-using System.Runtime.InteropServices;
+﻿using System;
 using anyID = System.UInt16;
 using uint64 = System.UInt64;
-using teamspeak.enumeration.server;
 
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void onVoiceDataEvent_type(uint64 serverID, anyID clientID, string voiceData, uint voiceDataSize, uint frequency);
+/* Ferry: This is the actual place for server-client interaction logic,
+ * the architecture is:
+ *  Program: Server main thread (init>start>listen/maintain connections),
+ *  callback: server-client interaction logic, this class is what we should subclass/modify
+ */
 
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void onClientStartTalkingEvent_type(uint64 serverID, anyID clientID);
-
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void onClientStopTalkingEvent_type(uint64 serverID, anyID clientID);
-
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void onClientConnected_type(uint64 serverID, anyID clientID, uint64 channelID, ref uint removeClientError);
-
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void onClientDisconnected_type(uint64 serverID, anyID clientID, uint64 channelID);
-
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void onClientMoved_type(uint64 serverID, anyID clientID, uint64 oldChannelID, uint64 newChannelID);
-
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void onChannelCreated_type(uint64 serverID, anyID invokerClientID, uint64 channelID);
-
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void onChannelEdited_type(uint64 serverID, anyID invokerClientID, uint64 channelID);
-
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void onChannelDeleted_type(uint64 serverID, anyID invokerClientID, uint64 channelID);
-
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void onServerTextMessageEvent_type(uint64 serverID, anyID invokerClientID, string textMessage);
-
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void onChannelTextMessageEvent_type(uint64 serverID, anyID invokerClientID, uint64 targetChannelID, string textMessage);
-
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void onUserLoggingMessageEvent_type(string logmessage, int logLevel, string logChannel, uint64 logID, string logTime, string completeLogString);
-
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void onAccountingErrorEvent_type(uint64 serverID, int errorCode);
-
-/* For unused callbacks */
-
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void dummy_type();
-
-[StructLayout(LayoutKind.Sequential)]
-public struct server_callback_structx
+public static class ServerEventHandler
 {
-    public onVoiceDataEvent_type onVoiceDataEvent_delegate;
-    public ClientTalkingEventHandler onClientStartTalkingEvent_delegate;
-    public onClientStopTalkingEvent_type onClientStopTalkingEvent_delegate;
-    public ClientConnectedEventHandler onClientConnected;
-    public onClientDisconnected_type onClientDisconnected_delegate;
-    public onClientMoved_type onClientMoved_delegate;
-    public onChannelCreated_type onChannelCreated_delegate;
-    public onChannelEdited_type onChannelEdited_delegate;
-    public onChannelDeleted_type onChannelDeleted_delegate;
-    public onServerTextMessageEvent_type onServerTextMessageEvent_delegate;
-    public onChannelTextMessageEvent_type onChannelTextMessageEvent_delegate;
-    public onUserLoggingMessageEvent_type onUserLoggingMessageEvent_delegate;
-    public onAccountingErrorEvent_type onAccountingErrorEvent_delegate;
-    public dummy_type dummy1_delegate;  // onCustomPacketEncryptEvent unused
-    public dummy_type dummy2_delegate;  // onCustomPacketDecryptEvent unused
-}
+    public static ServerEventCallbackMapper getDefaultEventCallbackMapper()
+    {
+        ServerEventCallbackMapper cbs = new ServerEventCallbackMapper();
+        cbs.onClientConnected = onClientConnected;
+        cbs.onClientDisconnected = onClientDisconnected;
+        cbs.onClientMoved = onClientMoved;
+        cbs.onChannelCreated = onChannelCreated;
+        cbs.onChannelEdited = onChannelEdited;
+        cbs.onChannelDeleted = onChannelDeleted;
+        cbs.onServerTextMessage = onServerTextMessageEvent;
+        cbs.onChannelTextMessage = onChannelTextMessageEvent;
+        cbs.onUserLoggingMessage = onUserLoggingMessageEvent;
+        cbs.onClientStartTalking = onClientStartTalkingEvent;
+        cbs.onClientStopTalking = onClientStopTalkingEvent;
+        cbs.onAccountingError = onAccountingErrorEvent;
+        return cbs;
+    }
 
-public static class callback
-{
     /*
+     *
      * Callback when client has connected.
      *
      * Parameter:

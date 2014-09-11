@@ -8,8 +8,8 @@
     <ProjectGuid>{0A161B25-D709-48FF-BA1D-7B2E8855A220}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ts3_server_minimal_sample</RootNamespace>
-    <AssemblyName>ts3_server_minimal_sample</AssemblyName>
+    <RootNamespace>teamspeak</RootNamespace>
+    <AssemblyName>TS3CustomServer</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <FileUpgradeFlags>
@@ -75,7 +75,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>ts3_server_minimal_sample.Program</StartupObject>
+    <StartupObject>ServerMainLoop</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -94,12 +94,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="callbacks.cs" />
-    <Compile Include="callback_x.cs" />
-    <Compile Include="Definitions.cs" />
-    <Compile Include="Delegates.cs" />
-    <Compile Include="facade.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Enum.cs" />
+    <Compile Include="Struct.cs" />
+    <Compile Include="ServerEventHandler.cs" />
+    <Compile Include="Error.cs" />
+    <Compile Include="Delegate.cs" />
+    <Compile Include="ServerDLLFacade.cs" />
+    <Compile Include="ServerMainLoop.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />
