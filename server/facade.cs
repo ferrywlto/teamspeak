@@ -49,7 +49,7 @@ namespace ts3_server_minimal_sample
         #region External Methods "Borrowed" (Imported) From ts3server_win32/64.dll
 #if x64
         [DllImport("ts3server_win64.dll", EntryPoint = "ts3server_initServerLib")]
-        public extern static uint initServerLib(ref server_callback_struct arg0, LogTypes arg1, string arg2);
+        public extern static uint initServerLib(ref server_callback_structx arg0, LogTypes arg1, string arg2);
 
         [DllImport("ts3server_win64.dll", EntryPoint = "ts3server_getServerLibVersion")]
         public extern static uint getServerLibVersion(out IntPtr arg0);

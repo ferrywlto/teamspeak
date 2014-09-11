@@ -95,7 +95,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="callbacks.cs" />
+    <Compile Include="callback_x.cs" />
     <Compile Include="Definitions.cs" />
+    <Compile Include="Delegates.cs" />
     <Compile Include="facade.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

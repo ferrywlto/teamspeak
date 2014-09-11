@@ -15,116 +15,118 @@ using teamspeak.enumeration.server;
 
 namespace ts3_server_minimal_sample
 {
-	class ts3server {
-		/*
-		 * Read server key from file
-		*/
-		public static int readKeyPairFromFile(string fileName, out string keyPair) {
-			try {
-				keyPair = System.IO.File.ReadAllText(fileName);
-			} catch (System.Exception /*ex*/) {
-				Console.WriteLine("Could not open file '{0}' for reading keypair", fileName);
-				keyPair = "";
-				return -1;
-			}
-			Console.WriteLine("Read keypair '{0}' from file '{1}'.", keyPair, fileName);
-			return 0;
-		}
+//    class ts3server {
+//        /*
+//         * Read server key from file
+//        */
+//        public static int readKeyPairFromFile(string fileName, out string keyPair) {
+//            try {
+//                keyPair = System.IO.File.ReadAllText(fileName);
+//            } catch (System.Exception /*ex*/) {
+//                Console.WriteLine("Could not open file '{0}' for reading keypair", fileName);
+//                keyPair = "";
+//                return -1;
+//            }
+//            Console.WriteLine("Read keypair '{0}' from file '{1}'.", keyPair, fileName);
+//            return 0;
+//        }
 
-		/*
-		 * Write server key to file
-		*/
-		public static int writeKeyPairToFile(string fileName, string keyPair) {
-			try {
-				File.WriteAllText(fileName, keyPair);
-			} catch (System.Exception /*ex*/) {
-				return -1;
-			}
-			return 0;
-		}
+//        /*
+//         * Write server key to file
+//        */
+//        public static int writeKeyPairToFile(string fileName, string keyPair) {
+//            try {
+//                File.WriteAllText(fileName, keyPair);
+//            } catch (System.Exception /*ex*/) {
+//                return -1;
+//            }
+//            return 0;
+//        }
 
-		#if x64
-			[DllImport("ts3server_win64.dll", EntryPoint = "ts3server_initServerLib")]
-			public static extern uint ts3server_initServerLib(ref server_callback_struct arg0, LogTypes arg1, string arg2);
+//        #if x64
+//            [DllImport("ts3server_win64.dll", EntryPoint = "ts3server_initServerLib")]
+//            public static extern uint ts3server_initServerLib(ref server_callback_struct arg0, LogTypes arg1, string arg2);
 
-			[DllImport("ts3server_win64.dll", EntryPoint = "ts3server_getServerLibVersion")]
-			public static extern uint ts3server_getServerLibVersion(out IntPtr arg0);
+//            [DllImport("ts3server_win64.dll", EntryPoint = "ts3server_getServerLibVersion")]
+//            public static extern uint ts3server_getServerLibVersion(out IntPtr arg0);
 
-			[DllImport("ts3server_win64.dll", EntryPoint = "ts3server_freeMemory")]
-			public static extern uint ts3server_freeMemory(IntPtr arg0);
+//            [DllImport("ts3server_win64.dll", EntryPoint = "ts3server_freeMemory")]
+//            public static extern uint ts3server_freeMemory(IntPtr arg0);
 
-			[DllImport("ts3server_win64.dll", EntryPoint = "ts3server_destroyServerLib")]
-			public static extern uint ts3server_destroyServerLib();
+//            [DllImport("ts3server_win64.dll", EntryPoint = "ts3server_destroyServerLib")]
+//            public static extern uint ts3server_destroyServerLib();
 
-			[DllImport("ts3server_win64.dll", EntryPoint = "ts3server_createVirtualServer")]
-            public static extern uint ts3server_createVirtualServer(int serverPort, string ip, string serverName, string serverKeyPair, uint serverMaxClients, out uint64 serverID);
+//            [DllImport("ts3server_win64.dll", EntryPoint = "ts3server_createVirtualServer")]
+//            public static extern uint ts3server_createVirtualServer(int serverPort, string ip, string serverName, string serverKeyPair, uint serverMaxClients, out uint64 serverID);
 
-			[DllImport("ts3server_win64.dll", EntryPoint = "ts3server_getGlobalErrorMessage")]
-			public static extern uint ts3server_getGlobalErrorMessage(uint errorcode, out IntPtr errormessage);
+//            [DllImport("ts3server_win64.dll", EntryPoint = "ts3server_getGlobalErrorMessage")]
+//            public static extern uint ts3server_getGlobalErrorMessage(uint errorcode, out IntPtr errormessage);
 
-			[DllImport("ts3server_win64.dll", EntryPoint = "ts3server_getVirtualServerKeyPair")]
-            public static extern uint ts3server_getVirtualServerKeyPair(uint64 serverID, out IntPtr result);
+//            [DllImport("ts3server_win64.dll", EntryPoint = "ts3server_getVirtualServerKeyPair")]
+//            public static extern uint ts3server_getVirtualServerKeyPair(uint64 serverID, out IntPtr result);
 
-			[DllImport("ts3server_win64.dll", EntryPoint = "ts3server_setVirtualServerVariableAsString")]
-            public static extern uint ts3server_setVirtualServerVariableAsString(uint64 serverID, VirtualServerProperties flag, string result);
+//            [DllImport("ts3server_win64.dll", EntryPoint = "ts3server_setVirtualServerVariableAsString")]
+//            public static extern uint ts3server_setVirtualServerVariableAsString(uint64 serverID, VirtualServerProperties flag, string result);
 
-			[DllImport("ts3server_win64.dll", EntryPoint = "ts3server_flushVirtualServerVariable")]
-            public static extern uint ts3server_flushVirtualServerVariable(uint64 serverID);
+//            [DllImport("ts3server_win64.dll", EntryPoint = "ts3server_flushVirtualServerVariable")]
+//            public static extern uint ts3server_flushVirtualServerVariable(uint64 serverID);
 
-			[DllImport("ts3server_win64.dll", EntryPoint = "ts3server_stopVirtualServer")]
-            public static extern uint ts3server_stopVirtualServer(uint64 serverID);
-		#else
-			[DllImport("ts3server_win32.dll", EntryPoint = "ts3server_initServerLib")]
-			public static extern uint ts3server_initServerLib(ref server_callback_struct arg0, LogTypes arg1, string arg2);
+//            [DllImport("ts3server_win64.dll", EntryPoint = "ts3server_stopVirtualServer")]
+//            public static extern uint ts3server_stopVirtualServer(uint64 serverID);
+//        #else
+//            [DllImport("ts3server_win32.dll", EntryPoint = "ts3server_initServerLib")]
+//            public static extern uint ts3server_initServerLib(ref server_callback_struct arg0, LogTypes arg1, string arg2);
 
-			[DllImport("ts3server_win32.dll", EntryPoint = "ts3server_getServerLibVersion")]
-			public static extern uint ts3server_getServerLibVersion(out IntPtr arg0);
+//            [DllImport("ts3server_win32.dll", EntryPoint = "ts3server_getServerLibVersion")]
+//            public static extern uint ts3server_getServerLibVersion(out IntPtr arg0);
 
-			[DllImport("ts3server_win32.dll", EntryPoint = "ts3server_freeMemory")]
-			public static extern uint ts3server_freeMemory(IntPtr arg0);
+//            [DllImport("ts3server_win32.dll", EntryPoint = "ts3server_freeMemory")]
+//            public static extern uint ts3server_freeMemory(IntPtr arg0);
 
-			[DllImport("ts3server_win32.dll", EntryPoint = "ts3server_destroyServerLib")]
-			public static extern uint ts3server_destroyServerLib();
+//            [DllImport("ts3server_win32.dll", EntryPoint = "ts3server_destroyServerLib")]
+//            public static extern uint ts3server_destroyServerLib();
 
-			[DllImport("ts3server_win32.dll", EntryPoint = "ts3server_createVirtualServer")]
-			public static extern uint ts3server_createVirtualServer(int serverPort, string ip, string serverName, string serverKeyPair, uint serverMaxClients, out uint64 serverID);
+//            [DllImport("ts3server_win32.dll", EntryPoint = "ts3server_createVirtualServer")]
+//            public static extern uint ts3server_createVirtualServer(int serverPort, string ip, string serverName, string serverKeyPair, uint serverMaxClients, out uint64 serverID);
 
-			[DllImport("ts3server_win32.dll", EntryPoint = "ts3server_getGlobalErrorMessage")]
-			public static extern uint ts3server_getGlobalErrorMessage(uint errorcode, out IntPtr errormessage);
+//            [DllImport("ts3server_win32.dll", EntryPoint = "ts3server_getGlobalErrorMessage")]
+//            public static extern uint ts3server_getGlobalErrorMessage(uint errorcode, out IntPtr errormessage);
 
-			[DllImport("ts3server_win32.dll", EntryPoint = "ts3server_getVirtualServerKeyPair")]
-			public static extern uint ts3server_getVirtualServerKeyPair(uint64 serverID, out IntPtr result);
+//            [DllImport("ts3server_win32.dll", EntryPoint = "ts3server_getVirtualServerKeyPair")]
+//            public static extern uint ts3server_getVirtualServerKeyPair(uint64 serverID, out IntPtr result);
 
-			[DllImport("ts3server_win32.dll", EntryPoint = "ts3server_setVirtualServerVariableAsString")]
-			public static extern uint ts3server_setVirtualServerVariableAsString(uint64 serverID, VirtualServerProperties flag, string result);
+//            [DllImport("ts3server_win32.dll", EntryPoint = "ts3server_setVirtualServerVariableAsString")]
+//            public static extern uint ts3server_setVirtualServerVariableAsString(uint64 serverID, VirtualServerProperties flag, string result);
 
-			[DllImport("ts3server_win32.dll", EntryPoint = "ts3server_flushVirtualServerVariable")]
-			public static extern uint ts3server_flushVirtualServerVariable(uint64 serverID);
+//            [DllImport("ts3server_win32.dll", EntryPoint = "ts3server_flushVirtualServerVariable")]
+//            public static extern uint ts3server_flushVirtualServerVariable(uint64 serverID);
 
-			[DllImport("ts3server_win32.dll", EntryPoint = "ts3server_stopVirtualServer")]
-			public static extern uint ts3server_stopVirtualServer(uint64 serverID);
-#endif
-    }
+//            [DllImport("ts3server_win32.dll", EntryPoint = "ts3server_stopVirtualServer")]
+//            public static extern uint ts3server_stopVirtualServer(uint64 serverID);
+//#endif
+//    }
 
 	class Program {
 		static void Main(string[] args) {
 			/* Assign the used callback function pointers */
-			server_callback_struct cbs = new server_callback_struct();
-			cbs.onClientConnected_delegate = callback.onClientConnected;
-			cbs.onClientDisconnected_delegate = new onClientDisconnected_type(callback.onClientDisconnected);
-            cbs.onClientMoved_delegate = new onClientMoved_type(callback.onClientMoved);
-			cbs.onChannelCreated_delegate = new onChannelCreated_type(callback.onChannelCreated);
-			cbs.onChannelEdited_delegate = new onChannelEdited_type(callback.onChannelEdited);
-			cbs.onChannelDeleted_delegate = new onChannelDeleted_type(callback.onChannelDeleted);
-            cbs.onServerTextMessageEvent_delegate = new onServerTextMessageEvent_type(callback.onServerTextMessageEvent);
-            cbs.onChannelTextMessageEvent_delegate = new onChannelTextMessageEvent_type(callback.onChannelTextMessageEvent);
-			cbs.onUserLoggingMessageEvent_delegate = new onUserLoggingMessageEvent_type(callback.onUserLoggingMessageEvent);
-			cbs.onClientStartTalkingEvent_delegate = new onClientStartTalkingEvent_type(callback.onClientStartTalkingEvent);
-			cbs.onClientStopTalkingEvent_delegate = new onClientStopTalkingEvent_type(callback.onClientStopTalkingEvent);
-            cbs.onAccountingErrorEvent_delegate = new onAccountingErrorEvent_type(callback.onAccountingErrorEvent);
+            //server_callback_struct cbs = new server_callback_struct();
+            //cbs.onClientConnected_delegate = callback_x.onClientConnected;
+            //cbs.onClientDisconnected_delegate = callback_x.onClientDisconnected;
+            //cbs.onClientMoved_delegate = callback_x.onClientMoved;
+            //cbs.onChannelCreated_delegate = callback_x.onChannelCreated;
+            //cbs.onChannelEdited_delegate = callback_x.onChannelEdited;
+            //cbs.onChannelDeleted_delegate = callback_x.onChannelDeleted;
+            //cbs.onServerTextMessageEvent_delegate = callback_x.onServerTextMessageEvent;
+            //cbs.onChannelTextMessageEvent_delegate = callback_x.onChannelTextMessageEvent;
+            //cbs.onUserLoggingMessageEvent_delegate = callback_x.onUserLoggingMessageEvent;
+            //cbs.onClientStartTalkingEvent_delegate = callback_x.onClientStartTalkingEvent;
+            //cbs.onClientStopTalkingEvent_delegate = callback_x.onClientStopTalkingEvent;
+            //cbs.onAccountingErrorEvent_delegate = callback_x.onAccountingErrorEvent;
 
+            //ServerEventHandlerMapper cbs2 = callback_x.getDefaultMapper();
+            server_callback_structx cbs2 = callback_x.getDefaultMapper();
 			/* Initialize server lib with callbacks */
-            uint error = TS3ServerDLLFacade.initServerLib(ref cbs, LogTypes.LogType_FILE | LogTypes.LogType_CONSOLE | LogTypes.LogType_USERLOGGING, null);
+            uint error = TS3ServerDLLFacade.initServerLib(ref cbs2, LogTypes.LogType_FILE | LogTypes.LogType_CONSOLE | LogTypes.LogType_USERLOGGING, null);
             if (error != Error.ok) {
                 Console.WriteLine("Failed to initialize serverlib: {0}.", error);
                 return;
@@ -144,7 +146,8 @@ namespace ts3_server_minimal_sample
 
 			string filename = string.Format("keypair_{0}.txt", 9987); // 9987 = default port
 			string keyPair;
-			if (ts3server.readKeyPairFromFile(filename,out keyPair) != 0) {
+            if (TS3ServerDLLFacade.readKeyPairFromFile(filename, out keyPair))
+            {
 				keyPair = "";
 			}
 
@@ -187,7 +190,8 @@ namespace ts3_server_minimal_sample
 				keyPair = Marshal.PtrToStringAnsi(keyPairPtr);
 
 				/* Save keyPair to file "keypair_<port>.txt"*/
-				if (ts3server.writeKeyPairToFile(filename, keyPair) != 0) {
+                if (TS3ServerDLLFacade.writeKeyPairToFile(filename, keyPair))
+                {
 					return;
 				}
 			}

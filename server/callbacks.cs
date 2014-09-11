@@ -55,12 +55,12 @@ public delegate void onAccountingErrorEvent_type(uint64 serverID, int errorCode)
 public delegate void dummy_type();
 
 [StructLayout(LayoutKind.Sequential)]
-public struct server_callback_struct
+public struct server_callback_structx
 {
     public onVoiceDataEvent_type onVoiceDataEvent_delegate;
-    public onClientStartTalkingEvent_type onClientStartTalkingEvent_delegate;
+    public ClientTalkingEventHandler onClientStartTalkingEvent_delegate;
     public onClientStopTalkingEvent_type onClientStopTalkingEvent_delegate;
-    public onClientConnected_type onClientConnected_delegate;
+    public ClientConnectedEventHandler onClientConnected;
     public onClientDisconnected_type onClientDisconnected_delegate;
     public onClientMoved_type onClientMoved_delegate;
     public onChannelCreated_type onChannelCreated_delegate;

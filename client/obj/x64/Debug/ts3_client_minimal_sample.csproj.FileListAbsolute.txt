@@ -1,9 +1,8 @@
-E:\ts3_sdk_3.0.2\bin\ts3_client_minimal_sample.exe
-E:\ts3_sdk_3.0.2\bin\ts3_client_minimal_sample.pdb
-E:\ts3_sdk_3.0.2\examples\csharp\client\obj\x64\Debug\ts3_client_minimal_sample.exe
-E:\ts3_sdk_3.0.2\examples\csharp\client\obj\x64\Debug\ts3_client_minimal_sample.pdb
-F:\ts3_sdk_3.0.2\examples\csharp\client\obj\x64\Debug\ts3_client_minimal_sample.exe
-F:\ts3_sdk_3.0.2\examples\csharp\client\obj\x64\Debug\ts3_client_minimal_sample.pdb
-F:\ts3_sdk_3.0.2\bin\ts3_client_minimal_sample.exe
-F:\ts3_sdk_3.0.2\bin\ts3_client_minimal_sample.pdb
-F:\ts3_sdk_3.0.2\examples\csharp\client\obj\x64\Debug\ts3_client_minimal_sample.csprojResolveAssemblyReference.cache
+E:\bin\ts3_client_minimal_sample.exe
+E:\bin\ts3_client_minimal_sample.pdb
+E:\ts3temp\teamspeak\client\obj\x64\Debug\ts3_client_minimal_sample.exe
+E:\ts3temp\teamspeak\client\obj\x64\Debug\ts3_client_minimal_sample.pdb
+E:\bin\ts3_client_minimal_sample.exe.config
+E:\ts3temp\teamspeak\client\bin\ts3_client_minimal_sample.exe.config
+E:\ts3temp\teamspeak\client\bin\ts3_client_minimal_sample.exe
+E:\ts3temp\teamspeak\client\bin\ts3_client_minimal_sample.pdb
