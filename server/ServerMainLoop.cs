@@ -6,7 +6,7 @@
 
 using System;
 using System.Runtime.InteropServices;
-
+using teamspeak.definition;
 using uint64 = System.UInt64;
 
 internal class ServerMainLoop

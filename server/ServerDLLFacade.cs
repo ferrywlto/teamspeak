@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using teamspeak.definition;
 using uint64 = System.UInt64;
 
 /* Ferry: This class is just a facade to link the ts3server_win32/64.dll at runtime
@@ -83,7 +84,7 @@ internal static class ServerDLLFacade
 
 #else
     [DllImport("ts3server_win32.dll", EntryPoint = "ts3server_initServerLib")]
-    public extern static uint initServerLib(ref server_callback_st arg0, LogTypes arg1, string arg2);
+    public extern static uint initServerLib(ref ServerEventCallbackMapper arg0, LogTypes arg1, string arg2);
 
     [DllImport("ts3server_win32.dll", EntryPoint = "ts3server_getServerLibVersion")]
     public extern static uint getServerLibVersion(out IntPtr arg0);

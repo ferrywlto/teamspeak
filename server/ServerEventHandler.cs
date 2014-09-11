@@ -1,6 +1,7 @@
 ﻿using System;
 using anyID = System.UInt16;
 using uint64 = System.UInt64;
+using teamspeak.definition;
 
 /* Ferry: This is the actual place for server-client interaction logic,
  * the architecture is:

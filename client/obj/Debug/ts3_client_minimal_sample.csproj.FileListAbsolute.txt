@@ -1,0 +1,5 @@
+E:\bin\ts3_client_minimal_sample.exe.config
+E:\bin\ts3_client_minimal_sample.exe
+E:\bin\ts3_client_minimal_sample.pdb
+E:\ts3temp\teamspeak\client\obj\Debug\ts3_client_minimal_sample.exe
+E:\ts3temp\teamspeak\client\obj\Debug\ts3_client_minimal_sample.pdb

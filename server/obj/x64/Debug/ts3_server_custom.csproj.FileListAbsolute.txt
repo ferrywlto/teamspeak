@@ -1,0 +1,4 @@
+E:\ts3temp\teamspeak\server\bin\TS3CustomServer.exe
+E:\ts3temp\teamspeak\server\bin\TS3CustomServer.pdb
+E:\ts3temp\teamspeak\server\obj\x64\Debug\TS3CustomServer.exe
+E:\ts3temp\teamspeak\server\obj\x64\Debug\TS3CustomServer.pdb

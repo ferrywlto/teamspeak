@@ -6,25 +6,29 @@
 
 using System.Runtime.InteropServices;
 
-[StructLayout(LayoutKind.Sequential)]
-public struct ServerEventCallbackMapper
+namespace teamspeak.definition
 {
-    public VoiceDataEventHandler onVoiceData;
-    public ClientTalkingEventHandler onClientStartTalking;
-    public ClientTalkingEventHandler onClientStopTalking;
-    public ClientConnectedEventHandler onClientConnected;
-    public ClientDisconnectedEventHandler onClientDisconnected;
-    public ClientMovedEventHandler onClientMoved;
-    public ChannelEventHandler onChannelCreated;
-    public ChannelEventHandler onChannelEdited;
-    public ChannelEventHandler onChannelDeleted;
-    public ServerTextMessageEventHandler onServerTextMessage;
-    public ChannelTextMessageEventHandler onChannelTextMessage;
-    public UserLoggingMessageEventHandler onUserLoggingMessage;
-    public AccountingErrorEventHandler onAccountingError;
+    [StructLayout(LayoutKind.Sequential)]
+    public struct ServerEventCallbackMapper
+    {
+        public VoiceDataEventHandler onVoiceData;
+        public ClientTalkingEventHandler onClientStartTalking;
+        public ClientTalkingEventHandler onClientStopTalking;
+        public ClientConnectedEventHandler onClientConnected;
+        public ClientDisconnectedEventHandler onClientDisconnected;
+        public ClientMovedEventHandler onClientMoved;
+        public ChannelEventHandler onChannelCreated;
+        public ChannelEventHandler onChannelEdited;
+        public ChannelEventHandler onChannelDeleted;
+        public ServerTextMessageEventHandler onServerTextMessage;
+        public ChannelTextMessageEventHandler onChannelTextMessage;
+        public UserLoggingMessageEventHandler onUserLoggingMessage;
+        public AccountingErrorEventHandler onAccountingError;
 
-    //[WARING] Ferry: Do NOT remove these two lines, they are required for the SDK DLL,
-    //remove or comment out them will make the program crash when client connects!
-    public UnusedEventHandler unusedButHaveToBeHere1;  // onCustomPacketEncryptEvent unused
-    public UnusedEventHandler unusedButHaveToBeHere2;  // onCustomPacketDecryptEvent unused
+        //[WARING] Ferry: Do NOT remove these two lines, they are required for the SDK DLL,
+        //remove or comment out them will make the program crash when client connects!
+        public UnusedEventHandler unusedButHaveToBeHere1;  // onCustomPacketEncryptEvent unused
+
+        public UnusedEventHandler unusedButHaveToBeHere2;  // onCustomPacketDecryptEvent unused
+    }
 }
