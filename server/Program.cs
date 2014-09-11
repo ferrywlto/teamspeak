@@ -124,7 +124,7 @@ namespace ts3_server_minimal_sample
             cbs.onAccountingErrorEvent_delegate = new onAccountingErrorEvent_type(callback.onAccountingErrorEvent);
 
 			/* Initialize server lib with callbacks */
-			uint error = ts3server.ts3server_initServerLib(ref cbs, LogTypes.LogType_FILE | LogTypes.LogType_CONSOLE | LogTypes.LogType_USERLOGGING, null);
+            uint error = TS3ServerDLLFacade.initServerLib(ref cbs, LogTypes.LogType_FILE | LogTypes.LogType_CONSOLE | LogTypes.LogType_USERLOGGING, null);
             if (error != Error.ok) {
                 Console.WriteLine("Failed to initialize serverlib: {0}.", error);
                 return;
@@ -132,7 +132,7 @@ namespace ts3_server_minimal_sample
 
 			/* Query and print client lib version */
 			IntPtr versionPtr = IntPtr.Zero;
-			error = ts3server.ts3server_getServerLibVersion(out versionPtr);
+			error = TS3ServerDLLFacade.getServerLibVersion(out versionPtr);
             if (error != Error.ok)
             {
 				Console.WriteLine("Failed to get clientlib version: {0}.", error);
@@ -140,7 +140,7 @@ namespace ts3_server_minimal_sample
 			}
 			string version = Marshal.PtrToStringAnsi(versionPtr);
 			Console.WriteLine(version);
-			ts3server.ts3server_freeMemory(versionPtr); /* Release dynamically allocated memory */
+			TS3ServerDLLFacade.freeMemory(versionPtr); /* Release dynamically allocated memory */
 
 			string filename = string.Format("keypair_{0}.txt", 9987); // 9987 = default port
 			string keyPair;
@@ -154,16 +154,16 @@ namespace ts3_server_minimal_sample
             uint64 serverID = 0;
 			Console.WriteLine("Create virtual server using keypair '{0}'", keyPair);
 			IntPtr pServerID = IntPtr.Zero;
-			error = ts3server.ts3server_createVirtualServer(9987, "0.0.0.0", "TeamSpeak 3 SDK Testserver", keyPair, 10, out serverID);
+			error = TS3ServerDLLFacade.createVirtualServer(9987, "0.0.0.0", "TeamSpeak 3 SDK Testserver", keyPair, 10, out serverID);
             if (error != Error.ok)
             {
 				IntPtr errormsgPtr = IntPtr.Zero;
-				ts3server.ts3server_getGlobalErrorMessage(error, out errormsgPtr);
+				TS3ServerDLLFacade.getGlobalErrorMessage(error, out errormsgPtr);
                 if (error == Error.ok)
                 {
 					string errormsg = Marshal.PtrToStringAnsi(errormsgPtr);
 					Console.WriteLine("Error creating virtual server: {0} ({1})", errormsg, error);
-					ts3server.ts3server_freeMemory(errormsgPtr);
+					TS3ServerDLLFacade.freeMemory(errormsgPtr);
 				}
 				return;
 			}
@@ -171,16 +171,16 @@ namespace ts3_server_minimal_sample
 			/* If we didn't load the keyPair before, query it from virtual server and save to file */
 			if (keyPair == null) {
 				IntPtr keyPairPtr = IntPtr.Zero;
-				error = ts3server.ts3server_getVirtualServerKeyPair(serverID, out keyPairPtr);
+				error = TS3ServerDLLFacade.getVirtualServerKeyPair(serverID, out keyPairPtr);
                 if (error != Error.ok)
                 {
 					IntPtr errormsgPtr = IntPtr.Zero;
-					ts3server.ts3server_getGlobalErrorMessage(error, out errormsgPtr);
+					TS3ServerDLLFacade.getGlobalErrorMessage(error, out errormsgPtr);
                     if (error == Error.ok)
                     {
 						string errormsg = Marshal.PtrToStringAnsi(errormsgPtr);
 						Console.WriteLine("Error querying keyPair: %s\n", errormsg);
-						ts3server.ts3server_freeMemory(errormsgPtr);
+						TS3ServerDLLFacade.freeMemory(errormsgPtr);
 					}
 					return;
 				}
@@ -193,7 +193,7 @@ namespace ts3_server_minimal_sample
 			}
 
 			/* Set welcome message */
-			error = ts3server.ts3server_setVirtualServerVariableAsString(serverID, VirtualServerProperties.VIRTUALSERVER_WELCOMEMESSAGE, "Hello TeamSpeak 3");
+			error = TS3ServerDLLFacade.setVirtualServerVariableAsString(serverID, VirtualServerProperties.VIRTUALSERVER_WELCOMEMESSAGE, "Hello TeamSpeak 3");
             if (error != Error.ok)
             {
 				Console.WriteLine("Error setting server welcomemessage: {0}", error);
@@ -201,7 +201,7 @@ namespace ts3_server_minimal_sample
 			}
 
 			/* Set server password */
-			error = ts3server.ts3server_setVirtualServerVariableAsString(serverID, VirtualServerProperties.VIRTUALSERVER_PASSWORD, "secret");
+			error = TS3ServerDLLFacade.setVirtualServerVariableAsString(serverID, VirtualServerProperties.VIRTUALSERVER_PASSWORD, "secret");
             if (error != Error.ok)
             {
 				Console.WriteLine("Error setting server password: {0}", error);
@@ -209,7 +209,7 @@ namespace ts3_server_minimal_sample
 			}
 
 			/* Flush above two changes to server */
-			error = ts3server.ts3server_flushVirtualServerVariable(serverID);
+			error = TS3ServerDLLFacade.flushVirtualServerVariable(serverID);
             if (error != Error.ok)
             {
 				Console.WriteLine("Error flushing server variables: {0}", error);
@@ -221,7 +221,7 @@ namespace ts3_server_minimal_sample
 			Console.ReadLine();
 
 			/* Stop virtual server */
-			error = ts3server.ts3server_stopVirtualServer(serverID);
+			error = TS3ServerDLLFacade.stopVirtualServer(serverID);
             if (error != Error.ok)
             {
 				Console.WriteLine("Error stopping virtual server: {0}", error);
@@ -229,7 +229,7 @@ namespace ts3_server_minimal_sample
 			}
 
 			/* Shutdown server lib */
-			error = ts3server.ts3server_destroyServerLib();
+			error = TS3ServerDLLFacade.destroyServerLib();
             if (error != Error.ok)
             {
 				Console.WriteLine("Error destroying server lib: {0}", error);

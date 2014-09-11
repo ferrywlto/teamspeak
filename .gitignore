@@ -1,6 +1,6 @@
 *.log
 
-server/obj/.*
+server/obj/*.*
 
 *.cache
 

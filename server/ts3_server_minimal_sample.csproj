@@ -93,6 +93,7 @@
   <ItemGroup>
     <Compile Include="callbacks.cs" />
     <Compile Include="Definitions.cs" />
+    <Compile Include="facade.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
