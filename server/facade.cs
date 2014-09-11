@@ -12,7 +12,7 @@ namespace ts3_server_minimal_sample
      * (Shit that the DLL defined all methods are static... how come!)
      * The SDK sample code also included the read/write key pair method
      */
-    internal class TS3ServerDLLFacade
+    internal static class TS3ServerDLLFacade
     {
         /* Read server key from file */
         public static bool readKeyPairFromFile(string fileName, out string keyPair)
