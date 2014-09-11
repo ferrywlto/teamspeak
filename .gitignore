@@ -1,1 +1,9 @@
-.log
+*.log
+
+server/obj/.*
+
+*.cache
+
+*.exe
+
+*.pdb
