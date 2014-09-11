@@ -1,0 +1,4 @@
+/Users/ferrywlto/Documents/Development/SDK/ts3_sdk_3.0.2/bin/ts3_server_minimal_sample.exe.mdb
+/Users/ferrywlto/Documents/Development/SDK/ts3_sdk_3.0.2/bin/ts3_server_minimal_sample.exe
+/Users/ferrywlto/Documents/Development/SDK/ts3_sdk_3.0.2/examples/csharp/server/obj/x64/Debug/ts3_server_minimal_sample.exe
+/Users/ferrywlto/Documents/Development/SDK/ts3_sdk_3.0.2/examples/csharp/server/obj/x64/Debug/ts3_server_minimal_sample.exe.mdb
