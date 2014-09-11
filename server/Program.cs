@@ -10,6 +10,8 @@ using System.IO;
 
 using anyID = System.UInt16;
 using uint64 = System.UInt64;
+using teamspeak.constant.error;
+using teamspeak.enumeration.server;
 
 namespace ts3_server_minimal_sample
 {
@@ -123,7 +125,7 @@ namespace ts3_server_minimal_sample
 
 			/* Initialize server lib with callbacks */
 			uint error = ts3server.ts3server_initServerLib(ref cbs, LogTypes.LogType_FILE | LogTypes.LogType_CONSOLE | LogTypes.LogType_USERLOGGING, null);
-            if (error != public_errors.ERROR_ok) {
+            if (error != Error.ok) {
                 Console.WriteLine("Failed to initialize serverlib: {0}.", error);
                 return;
             }
@@ -131,7 +133,8 @@ namespace ts3_server_minimal_sample
 			/* Query and print client lib version */
 			IntPtr versionPtr = IntPtr.Zero;
 			error = ts3server.ts3server_getServerLibVersion(out versionPtr);
-			if (error != public_errors.ERROR_ok) {
+            if (error != Error.ok)
+            {
 				Console.WriteLine("Failed to get clientlib version: {0}.", error);
 				return;
 			}
@@ -152,10 +155,12 @@ namespace ts3_server_minimal_sample
 			Console.WriteLine("Create virtual server using keypair '{0}'", keyPair);
 			IntPtr pServerID = IntPtr.Zero;
 			error = ts3server.ts3server_createVirtualServer(9987, "0.0.0.0", "TeamSpeak 3 SDK Testserver", keyPair, 10, out serverID);
-			if (error != public_errors.ERROR_ok) {
+            if (error != Error.ok)
+            {
 				IntPtr errormsgPtr = IntPtr.Zero;
 				ts3server.ts3server_getGlobalErrorMessage(error, out errormsgPtr);
-				if (error == public_errors.ERROR_ok) {
+                if (error == Error.ok)
+                {
 					string errormsg = Marshal.PtrToStringAnsi(errormsgPtr);
 					Console.WriteLine("Error creating virtual server: {0} ({1})", errormsg, error);
 					ts3server.ts3server_freeMemory(errormsgPtr);
@@ -167,10 +172,12 @@ namespace ts3_server_minimal_sample
 			if (keyPair == null) {
 				IntPtr keyPairPtr = IntPtr.Zero;
 				error = ts3server.ts3server_getVirtualServerKeyPair(serverID, out keyPairPtr);
-				if (error != public_errors.ERROR_ok) {
+                if (error != Error.ok)
+                {
 					IntPtr errormsgPtr = IntPtr.Zero;
 					ts3server.ts3server_getGlobalErrorMessage(error, out errormsgPtr);
-					if (error == public_errors.ERROR_ok) {
+                    if (error == Error.ok)
+                    {
 						string errormsg = Marshal.PtrToStringAnsi(errormsgPtr);
 						Console.WriteLine("Error querying keyPair: %s\n", errormsg);
 						ts3server.ts3server_freeMemory(errormsgPtr);
@@ -187,21 +194,24 @@ namespace ts3_server_minimal_sample
 
 			/* Set welcome message */
 			error = ts3server.ts3server_setVirtualServerVariableAsString(serverID, VirtualServerProperties.VIRTUALSERVER_WELCOMEMESSAGE, "Hello TeamSpeak 3");
-			if (error != public_errors.ERROR_ok) {
+            if (error != Error.ok)
+            {
 				Console.WriteLine("Error setting server welcomemessage: {0}", error);
 				return;
 			}
 
 			/* Set server password */
 			error = ts3server.ts3server_setVirtualServerVariableAsString(serverID, VirtualServerProperties.VIRTUALSERVER_PASSWORD, "secret");
-			if (error != public_errors.ERROR_ok) {
+            if (error != Error.ok)
+            {
 				Console.WriteLine("Error setting server password: {0}", error);
 				return;
 			}
 
 			/* Flush above two changes to server */
 			error = ts3server.ts3server_flushVirtualServerVariable(serverID);
-			if (error != public_errors.ERROR_ok) {
+            if (error != Error.ok)
+            {
 				Console.WriteLine("Error flushing server variables: {0}", error);
 				return;
 			}
@@ -212,14 +222,16 @@ namespace ts3_server_minimal_sample
 
 			/* Stop virtual server */
 			error = ts3server.ts3server_stopVirtualServer(serverID);
-			if (error != public_errors.ERROR_ok) {
+            if (error != Error.ok)
+            {
 				Console.WriteLine("Error stopping virtual server: {0}", error);
 				return;
 			}
 
 			/* Shutdown server lib */
 			error = ts3server.ts3server_destroyServerLib();
-			if (error != public_errors.ERROR_ok) {
+            if (error != Error.ok)
+            {
 				Console.WriteLine("Error destroying server lib: {0}", error);
 				return;
 			}

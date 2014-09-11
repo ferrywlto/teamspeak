@@ -8,6 +8,7 @@ using System;
 using System.Runtime.InteropServices;
 using anyID = System.UInt16;
 using uint64 = System.UInt64;
+using teamspeak.enumeration.server;
 
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 public delegate void onVoiceDataEvent_type(uint64 serverID, anyID clientID, string voiceData, uint voiceDataSize, uint frequency);

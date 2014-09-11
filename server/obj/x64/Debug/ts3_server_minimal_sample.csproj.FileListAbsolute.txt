@@ -3,3 +3,11 @@ E:\ts3_sdk_3.0.2\bin\ts3_server_minimal_sample.exe
 E:\ts3_sdk_3.0.2\bin\ts3_server_minimal_sample.pdb
 E:\ts3_sdk_3.0.2\examples\csharp\server\obj\x64\Debug\ts3_server_minimal_sample.csprojResolveAssemblyReference.cache
 E:\ts3_sdk_3.0.2\examples\csharp\server\obj\x64\Debug\ts3_server_minimal_sample.pdb
+E:\bin\ts3_server_minimal_sample.exe
+E:\bin\ts3_server_minimal_sample.pdb
+C:\bin\ts3_server_minimal_sample.exe
+C:\bin\ts3_server_minimal_sample.pdb
+E:\ts3temp\teamspeak\server\bin\ts3_server_minimal_sample.exe
+E:\ts3temp\teamspeak\server\bin\ts3_server_minimal_sample.pdb
+E:\ts3temp\teamspeak\server\obj\x64\Debug\ts3_server_minimal_sample.exe
+E:\ts3temp\teamspeak\server\obj\x64\Debug\ts3_server_minimal_sample.pdb
