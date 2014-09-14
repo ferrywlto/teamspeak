@@ -1,4 +1,6 @@
 E:\ts3temp\teamspeak\server\bin\TS3CustomServer.exe
 E:\ts3temp\teamspeak\server\bin\TS3CustomServer.pdb
+E:\ts3temp\teamspeak\server\obj\x64\Debug\teamspeak.ServerForm.resources
+E:\ts3temp\teamspeak\server\obj\x64\Debug\ts3_server_custom.csproj.GenerateResource.Cache
 E:\ts3temp\teamspeak\server\obj\x64\Debug\TS3CustomServer.exe
 E:\ts3temp\teamspeak\server\obj\x64\Debug\TS3CustomServer.pdb

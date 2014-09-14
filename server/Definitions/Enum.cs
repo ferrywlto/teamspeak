@@ -1,5 +1,12 @@
 ﻿namespace teamspeak.definition
 {
+    public enum ServerState
+    {
+        STATE_NONE = 0,
+        STATE_STARTED,
+        STATE_CLOSED
+    };
+
     public enum Visibility
     {
         ENTER_VISIBILITY = 0,
