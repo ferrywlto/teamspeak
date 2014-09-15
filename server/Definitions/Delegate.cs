@@ -3,61 +3,62 @@
  *
  * Copyright (c) 2007-2010 TeamSpeak-Systems
  */
+
 namespace teamspeak.definition
 {
     using System.Runtime.InteropServices;
-    using anyID = System.UInt16;
-    using uint64 = System.UInt64;
 
     //Ferry: consolidated delegate declaration
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void ClientTalkingEventHandler(uint64 serverID, anyID clientID);
+    public delegate void ClientTalkingEventHandler(ulong serverID, ushort clientID);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void ChannelEventHandler(uint64 serverID, anyID invokerClientID, uint64 channelID);
+    public delegate void ChannelEventHandler(ulong serverID, ushort invokerClientID, ulong channelID);
 
     //original delegate declaration
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void VoiceDataEventHandler(uint64 serverID, anyID clientID, string voiceData, uint voiceDataSize, uint frequency);
+    public delegate void VoiceDataEventHandler(ulong serverID, ushort clientID, string voiceData, uint voiceDataSize, uint frequency);
+    #region Consolidated
+    //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    //public delegate void onClientStartTalkingEventDelegate(ulong serverID, anyID clientID);
 
     //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    //public delegate void onClientStartTalkingEventDelegate(uint64 serverID, anyID clientID);
+    //public delegate void onClientStopTalkingEventDelegate(ulong serverID, anyID clientID);
+    #endregion
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void ClientConnectedEventHandler(ulong serverID, ushort clientID, ulong channelID, ref uint removeClientError);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void ClientDisconnectedEventHandler(ulong serverID, ushort clientID, ulong channelID);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void ClientMovedEventHandler(ulong serverID, ushort clientID, ulong oldChannelID, ulong newChannelID);
+    #region Consolidated
+    //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    //public delegate void onChannelCreatedDelegate(ulong serverID, anyID invokerClientID, ulong channelID);
 
     //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    //public delegate void onClientStopTalkingEventDelegate(uint64 serverID, anyID clientID);
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void ClientConnectedEventHandler(uint64 serverID, anyID clientID, uint64 channelID, ref uint removeClientError);
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void ClientDisconnectedEventHandler(uint64 serverID, anyID clientID, uint64 channelID);
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void ClientMovedEventHandler(uint64 serverID, anyID clientID, uint64 oldChannelID, uint64 newChannelID);
+    //public delegate void onChannelEditedDelegate(ulong serverID, anyID invokerClientID, ulong channelID);
 
     //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    //public delegate void onChannelCreatedDelegate(uint64 serverID, anyID invokerClientID, uint64 channelID);
-
-    //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    //public delegate void onChannelEditedDelegate(uint64 serverID, anyID invokerClientID, uint64 channelID);
-
-    //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    //public delegate void onChannelDeletedDelegate(uint64 serverID, anyID invokerClientID, uint64 channelID);
+    //public delegate void onChannelDeletedDelegate(ulong serverID, anyID invokerClientID, ulong channelID);
+    #endregion
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void ServerTextMessageEventHandler(ulong serverID, ushort invokerClientID, string textMessage);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void ServerTextMessageEventHandler(uint64 serverID, anyID invokerClientID, string textMessage);
+    public delegate void ChannelTextMessageEventHandler(ulong serverID, ushort invokerClientID, ulong targetChannelID, string textMessage);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void ChannelTextMessageEventHandler(uint64 serverID, anyID invokerClientID, uint64 targetChannelID, string textMessage);
+    public delegate void UserLoggingMessageEventHandler(string logMessage, int logLevel, string logChannel, ulong logID, string logTime, string completeLogString);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void UserLoggingMessageEventHandler(string logmessage, int logLevel, string logChannel, uint64 logID, string logTime, string completeLogString);
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void AccountingErrorEventHandler(uint64 serverID, int errorCode);
+    public delegate void AccountingErrorEventHandler(ulong serverID, int errorCode);
 
     /* For unused callbacks [WARNING] Don't comment it out, they are required to be here even unused! */
-
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void UnusedEventHandler();
+
+    //Ferry: Below are our own Delegates
+    public delegate void MessageEventHandler(string message);
 }
