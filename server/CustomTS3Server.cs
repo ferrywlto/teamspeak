@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using teamspeak.definition;
-
+using teamspeak.definitions;
+using teamspeak;
 /* Ferry: This is the place to wire-up server event to actual handlers
  * i.e. the UI, such that all object that are interested in server event
  * can register the listener.
@@ -10,6 +10,9 @@ using teamspeak.definition;
 
 public class CustomTS3Server
 {
+    //Ferry: Below are our own Delegates
+    public delegate void CustomServerMessageEvent(string message);
+
     //Ferry: [WARNING] _mapper must be public or AccessViolation will throw
     public ServerEventCallbackMapper _mapper;
     private ServerState _state = ServerState.STATE_NONE;
@@ -17,35 +20,35 @@ public class CustomTS3Server
     private string _serverKey = string.Empty;
 
     #region Event Declarations
-    public event VoiceDataEventHandler VoiceData;
+    public event VoiceDataEvent VoiceData;
 
-    public event ClientTalkingEventHandler ClientStartTalking;
+    public event ClientStartTalkingEvent ClientStartTalking;
 
-    public event ClientTalkingEventHandler ClientStopTalking;
+    public event ClientStopTalkingEvent ClientStopTalking;
 
-    public event ClientConnectedEventHandler ClientConnected;
+    public event ClientConnectedEvent ClientConnected;
 
-    public event ClientDisconnectedEventHandler ClientDisconnected;
+    public event ClientDisconnectedEvent ClientDisconnected;
 
-    public event ClientMovedEventHandler ClientMoved;
+    public event ClientMovedEvent ClientMoved;
 
-    public event ChannelEventHandler ChannelCreated;
+    public event ChannelCreatedEvent ChannelCreated;
 
-    public event ChannelEventHandler ChannelEdited;
+    public event ChannelEditedEvent ChannelEdited;
 
-    public event ChannelEventHandler ChannelDeleted;
+    public event ChannelDeletedEvent ChannelDeleted;
 
-    public event ServerTextMessageEventHandler ServerTextMessage;
+    public event ServerTextMessageEvent ServerTextMessage;
 
-    public event ChannelTextMessageEventHandler ChannelTextMessage;
+    public event ChannelTextMessageEvent ChannelTextMessage;
 
-    public event UserLoggingMessageEventHandler UserLoggingMessage;
+    public event UserLoggingMessageEvent UserLoggingMessage;
 
-    public event AccountingErrorEventHandler AccountingError;
+    public event AccountingErrorEvent AccountingError;
 
-    public event MessageEventHandler ErrorOccured;
+    public event CustomServerMessageEvent ErrorOccured;
 
-    public event MessageEventHandler NotificationNeeded;
+    public event CustomServerMessageEvent NotificationNeeded;
     #endregion
 
     public CustomTS3Server()
@@ -202,19 +205,19 @@ public class CustomTS3Server
     
     private void initMapper()
     {
-        _mapper = new ServerEventCallbackMapper();
-        _mapper.onClientConnected = onClientConnected;
+        _mapper                      = new ServerEventCallbackMapper();
+        _mapper.onClientConnected    = onClientConnected;
         _mapper.onClientDisconnected = onClientDisconnected;
-        _mapper.onClientMoved = onClientMoved;
-        _mapper.onChannelCreated = onChannelCreated;
-        _mapper.onChannelEdited = onChannelEdited;
-        _mapper.onChannelDeleted = onChannelDeleted;
-        _mapper.onServerTextMessage = onServerTextMessage;
+        _mapper.onClientMoved        = onClientMoved;
+        _mapper.onChannelCreated     = onChannelCreated;
+        _mapper.onChannelEdited      = onChannelEdited;
+        _mapper.onChannelDeleted     = onChannelDeleted;
+        _mapper.onServerTextMessage  = onServerTextMessage;
         _mapper.onChannelTextMessage = onChannelTextMessage;
         _mapper.onUserLoggingMessage = onUserLoggingMessage;
         _mapper.onClientStartTalking = onClientStartTalking;
-        _mapper.onClientStopTalking = onClientStopTalking;
-        _mapper.onAccountingError = onAccountingError;
+        _mapper.onClientStopTalking  = onClientStopTalking;
+        _mapper.onAccountingError    = onAccountingError;
     }
 
     private void initServerLibrary()
@@ -334,11 +337,8 @@ public class CustomTS3Server
 #if x64
     const string DLL_FILE_NAME = "ts3server_win64.dll";
 #else
-    const string dllFileName = "ts3server_win32.dll";
+    const string DLL_FILE_NAME = "ts3server_win32.dll";
 #endif
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_setVirtualServerVariableAsInt")]
-    extern static uint SetVirtualServerVariableAsInt(ulong serverID, ChannelProperties flag, int value);
-
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_initServerLib")]
     extern static uint InitServerLib(ref ServerEventCallbackMapper functionPointers, LogTypes logTypes, string logFolderPath);
 
@@ -368,7 +368,7 @@ public class CustomTS3Server
 
     #region variable getters
     //Ferry: Connection Properties have no setters
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getVirtualServerConnectionVariableAsulong")]
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getVirtualServerConnectionVariableAsUInt64")]
     extern static uint GetVirtualServerConnectionVariableAsulong(ulong serverID, ConnectionProperties flag, out IntPtr result);
 
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getVirtualServerConnectionVariableAsDouble")]

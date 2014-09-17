@@ -1,0 +1,4 @@
+E:\ts3temp\teamspeak\common\bin\Debug\teamspeak.definitions.dll
+E:\ts3temp\teamspeak\common\bin\Debug\teamspeak.definitions.pdb
+E:\ts3temp\teamspeak\common\obj\Debug\teamspeak.definitions.dll
+E:\ts3temp\teamspeak\common\obj\Debug\teamspeak.definitions.pdb

@@ -1,4 +1,4 @@
-﻿namespace teamspeak.definition
+﻿namespace teamspeak.definitions
 {
     public static class Error
     {
