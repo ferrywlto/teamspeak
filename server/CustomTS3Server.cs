@@ -2,25 +2,25 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using teamspeak.definitions;
-using teamspeak;
+
 /* Ferry: This is the place to wire-up server event to actual handlers
  * i.e. the UI, such that all object that are interested in server event
  * can register the listener.
  */
 
-public class CustomTS3Server
+public class TS3CustomServer : TS3SDKConsumerBase
 {
     //Ferry: Below are our own Delegates
-    public delegate void CustomServerMessageEvent(string message);
+    //public delegate void CustomServerMessageEvent(string message);
 
     //Ferry: [WARNING] _mapper must be public or AccessViolation will throw
     public ServerEventCallbackMapper _mapper;
+
     private ServerState _state = ServerState.STATE_NONE;
     private ulong _serverID = 0;
     private string _serverKey = string.Empty;
 
     #region Event Declarations
-    public event VoiceDataEvent VoiceData;
 
     public event ClientStartTalkingEvent ClientStartTalking;
 
@@ -46,87 +46,82 @@ public class CustomTS3Server
 
     public event AccountingErrorEvent AccountingError;
 
-    public event CustomServerMessageEvent ErrorOccured;
-
-    public event CustomServerMessageEvent NotificationNeeded;
-    #endregion
-
-    public CustomTS3Server()
-    {
-        initMapper();
-    }
+    #endregion Event Declarations
 
     #region Event Handlers
+
     //Ferry: The null check can remove when need more performance, just have to ensure there must be at least one listener listening each event
-    public void onClientConnected(ulong serverID, ushort clientID, ulong channelID, ref uint removeClientError)
+    private void onClientConnected(ulong serverID, ushort clientID, ulong channelID, ref uint removeClientError)
     {
-        if(ClientConnected!=null) ClientConnected(serverID, clientID, channelID, ref removeClientError);
+        if (ClientConnected != null) ClientConnected(serverID, clientID, channelID, ref removeClientError);
     }
 
-    public void onClientDisconnected(ulong serverID, ushort clientID, ulong channelID)
+    private void onClientDisconnected(ulong serverID, ushort clientID, ulong channelID)
     {
         if (ClientDisconnected != null) ClientDisconnected(serverID, clientID, channelID);
     }
 
-    public void onClientMoved(ulong serverID, ushort clientID, ulong oldChannelID, ulong newChannelID)
+    private void onClientMoved(ulong serverID, ushort clientID, ulong oldChannelID, ulong newChannelID)
     {
         if (ClientMoved != null) ClientMoved(serverID, clientID, oldChannelID, newChannelID);
     }
 
-    public void onChannelCreated(ulong serverID, ushort invokerClientID, ulong channelID)
+    private void onChannelCreated(ulong serverID, ushort invokerClientID, ulong channelID)
     {
         if (ChannelCreated != null) ChannelCreated(serverID, invokerClientID, channelID);
     }
 
-    public void onChannelEdited(ulong serverID, ushort invokerClientID, ulong channelID)
+    private void onChannelEdited(ulong serverID, ushort invokerClientID, ulong channelID)
     {
         if (ChannelEdited != null) ChannelEdited(serverID, invokerClientID, channelID);
     }
 
-    public void onChannelDeleted(ulong serverID, ushort invokerClientID, ulong channelID)
+    private void onChannelDeleted(ulong serverID, ushort invokerClientID, ulong channelID)
     {
         if (ChannelDeleted != null) ChannelDeleted(serverID, invokerClientID, channelID);
     }
 
-    public void onServerTextMessage(ulong serverID, ushort invokerClientID, string textMessage)
+    private void onServerTextMessage(ulong serverID, ushort invokerClientID, string textMessage)
     {
         if (ServerTextMessage != null) ServerTextMessage(serverID, invokerClientID, textMessage);
     }
 
-    public void onChannelTextMessage(ulong serverID, ushort invokerClientID, ulong targetChannelID, string textMessage)
+    private void onChannelTextMessage(ulong serverID, ushort invokerClientID, ulong targetChannelID, string textMessage)
     {
         if (ChannelTextMessage != null) ChannelTextMessage(serverID, invokerClientID, targetChannelID, textMessage);
     }
 
-    public void onUserLoggingMessage(string logMessage, int logLevel, string logChannel, ulong logID, string logTime, string completeLogString)
+    private void onUserLoggingMessage(string logMessage, int logLevel, string logChannel, ulong logID, string logTime, string completeLogString)
     {
         if (UserLoggingMessage != null) UserLoggingMessage(logMessage, logLevel, logChannel, logID, logTime, completeLogString);
     }
 
-    public void onClientStartTalking(ulong serverID, ushort clientID)
+    private void onClientStartTalking(ulong serverID, ushort clientID)
     {
         if (ClientStartTalking != null) ClientStartTalking(serverID, clientID);
     }
 
-    public void onClientStopTalking(ulong serverID, ushort clientID)
+    private void onClientStopTalking(ulong serverID, ushort clientID)
     {
         if (ClientStopTalking != null) ClientStopTalking(serverID, clientID);
     }
 
-    public void onAccountingError(ulong serverID, int errorCode)
+    private void onAccountingError(ulong serverID, int errorCode)
     {
         if (AccountingError != null) AccountingError(serverID, errorCode);
     }
 
+    #endregion Event Handlers
 
-    #endregion
     #region Utilities
+
     /* Read server key from file */
+
     private string readServerKeyFromFile(string fileName)
     {
         try
         {
-            if(!File.Exists(fileName))
+            if (!File.Exists(fileName))
             {
                 File.CreateText(fileName).Close();
                 notify(string.Format("{0} not found, new key file created.", fileName));
@@ -147,13 +142,14 @@ public class CustomTS3Server
     }
 
     /* Write server key to file */
+
     private void writeServerKeyToFile(string fileName)
     {
-        try 
+        try
         {
             IntPtr serverKeyPtr = IntPtr.Zero;
             uint result = Error.ok;
-            if((result = GetVirtualServerKeyPair(_serverID, out serverKeyPtr)) != Error.ok)
+            if ((result = GetVirtualServerKeyPair(_serverID, out serverKeyPtr)) != Error.ok)
             {
                 notifyError(string.Format("Error querying keyPair: %s\n", getGlobalErrorMsg(result)));
                 return;
@@ -174,6 +170,7 @@ public class CustomTS3Server
             notifyError(string.Format("Could not open file '{0}' for writing keypair", fileName));
         }
     }
+
     private string getStringFromPointer(IntPtr pointer)
     {
         string temp = string.Empty;
@@ -192,44 +189,31 @@ public class CustomTS3Server
         return tmpMsg;
     }
 
-    private void notify(string message)
-    {
-        if (NotificationNeeded != null) NotificationNeeded(message);
-    }
+    #endregion Utilities
 
-    private void notifyError(string message)
+    /* Assign the used callback function pointers */
+
+    protected override void initMapper()
     {
-        if (ErrorOccured != null) ErrorOccured(message);
-    }
-    #endregion
-    
-    private void initMapper()
-    {
-        _mapper                      = new ServerEventCallbackMapper();
-        _mapper.onClientConnected    = onClientConnected;
+        if (mapperInitialized) return;
+
+        _mapper = new ServerEventCallbackMapper();
+        _mapper.onClientConnected = onClientConnected;
         _mapper.onClientDisconnected = onClientDisconnected;
-        _mapper.onClientMoved        = onClientMoved;
-        _mapper.onChannelCreated     = onChannelCreated;
-        _mapper.onChannelEdited      = onChannelEdited;
-        _mapper.onChannelDeleted     = onChannelDeleted;
-        _mapper.onServerTextMessage  = onServerTextMessage;
+        _mapper.onClientMoved = onClientMoved;
+        _mapper.onChannelCreated = onChannelCreated;
+        _mapper.onChannelEdited = onChannelEdited;
+        _mapper.onChannelDeleted = onChannelDeleted;
+        _mapper.onServerTextMessage = onServerTextMessage;
         _mapper.onChannelTextMessage = onChannelTextMessage;
         _mapper.onUserLoggingMessage = onUserLoggingMessage;
         _mapper.onClientStartTalking = onClientStartTalking;
-        _mapper.onClientStopTalking  = onClientStopTalking;
-        _mapper.onAccountingError    = onAccountingError;
+        _mapper.onClientStopTalking = onClientStopTalking;
+        _mapper.onAccountingError = onAccountingError;
     }
 
     private void initServerLibrary()
     {
-        /* Ferry: actually it will not happen, private and only called once when server start */
-        //if (_state != ServerState.STATE_NONE)
-        //{
-        //    notifyError("Server library initialized already!");
-        //    return;
-        //}
-
-        /* Assign the used callback function pointers */
         /* Initialize server lib with callbacks */
         uint result = Error.ok;
         if ((result = InitServerLib(ref this._mapper, LogTypes.LogType_FILE | LogTypes.LogType_CONSOLE | LogTypes.LogType_USERLOGGING, null)) != Error.ok)
@@ -240,15 +224,13 @@ public class CustomTS3Server
 
         /* Query and print client lib version */
         IntPtr versionPtr = IntPtr.Zero;
-        
-        if((result = GetServerLibVersion(out versionPtr)) != Error.ok)
+        if ((result = GetServerLibVersion(out versionPtr)) != Error.ok)
         {
             notifyError(string.Format("Failed to get server lib version: {0}.", result));
             return;
         }
-
         notify(string.Format("Server Library Initialize Success. Library Version: {0}",
-            getStringFromPointer(versionPtr)));
+        getStringFromPointer(versionPtr)));
     }
 
     public void start(int serverPort = 9987, string bindIP = "0.0.0.0",
@@ -260,7 +242,7 @@ public class CustomTS3Server
             notifyError("Server already started.");
             return;
         }
-        else if(_state == ServerState.STATE_NONE) // Ferry: Run once only, if not initialized
+        else if (_state == ServerState.STATE_NONE) // Ferry: Run once only, if not initialized
         {
             initServerLibrary();
         }
@@ -272,7 +254,7 @@ public class CustomTS3Server
         notify(string.Format("Create virtual server using keypair '{0}'", _serverKey));
 
         uint result = Error.ok;
-        if((result = CreateVirtualServer(serverPort, bindIP, serverName, _serverKey, maxSlots, out _serverID)) != Error.ok)
+        if ((result = CreateVirtualServer(serverPort, bindIP, serverName, _serverKey, maxSlots, out _serverID)) != Error.ok)
         {
             notifyError(string.Format("Error creating virtual server: {0}", getGlobalErrorMsg(result)));
             return;
@@ -288,7 +270,7 @@ public class CustomTS3Server
             notifyError(string.Format("Error setting server welcomemessage: {0}", result));
             return;
         }
-                
+
         /* Set server password */
         if ((result = SetVirtualServerVariableAsString(_serverID, VirtualServerProperties.VIRTUALSERVER_PASSWORD, serverPassword)) != Error.ok)
         {
@@ -322,7 +304,7 @@ public class CustomTS3Server
             notifyError(string.Format("Error stopping virtual server: {0}", result));
             return;
         }
-        
+
         /* Shutdown server lib */
         if ((result = DestroyServerLib()) != Error.ok)
         {
@@ -334,116 +316,207 @@ public class CustomTS3Server
     }
 
     #region Server DLL Facade
+
 #if x64
-    const string DLL_FILE_NAME = "ts3server_win64.dll";
+    private const string DLL_FILE_NAME = "ts3server_win64.dll";
 #else
     const string DLL_FILE_NAME = "ts3server_win32.dll";
 #endif
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_initServerLib")]
-    extern static uint InitServerLib(ref ServerEventCallbackMapper functionPointers, LogTypes logTypes, string logFolderPath);
 
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getServerLibVersion")]
-    extern static uint GetServerLibVersion(out IntPtr result);
+    #region Misc
 
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_freeMemory")]
-    extern static uint FreeMemory(IntPtr ptrVariableToFree);
+    private static extern uint FreeMemory(IntPtr ptrVariableToFree);
 
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_destroyServerLib")]
-    extern static uint DestroyServerLib();
-
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_createVirtualServer")]
-    extern static uint CreateVirtualServer(int serverPort, string ip, string serverName, string serverKeyPair, uint serverMaxClients, out ulong generatedServerID);
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_setLogVerbosity")]
+    private static extern uint SetLogVerbosity(LogLevel logVerbosity);
 
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getGlobalErrorMessage")]
-    extern static uint GetGlobalErrorMessage(uint errorCode, out IntPtr errorMessage);
+    private static extern uint GetGlobalErrorMessage(uint errorCode, out IntPtr errorMessage);
 
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getVirtualServerKeyPair")]
-    extern static uint GetVirtualServerKeyPair(ulong serverID, out IntPtr result);
+    #endregion Misc
 
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_flushVirtualServerVariable")]
-    extern static uint FlushVirtualServerVariable(ulong serverID);
+    #region Server Library
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_initServerLib")]
+    private static extern uint InitServerLib(ref ServerEventCallbackMapper functionPointers, LogTypes logTypes, string logFolderPath);
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getServerLibVersionNumber")]
+    private static extern uint GetServerLibVersionNumber(out ulong result);
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getServerLibVersion")]
+    private static extern uint GetServerLibVersion(out IntPtr result);
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_destroyServerLib")]
+    private static extern uint DestroyServerLib();
+
+    #endregion Server Library
+
+    #region Server
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getVirtualServerList")]
+    private static extern uint GetVirtualServerList(out ulong[] result);
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_createVirtualServer")]
+    private static extern uint CreateVirtualServer(int serverPort, string ip, string serverName, string serverKeyPair, uint serverMaxClients, out ulong generatedServerID);
 
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_stopVirtualServer")]
-    extern static uint StopVirtualServer(ulong serverID);
+    private static extern uint StopVirtualServer(ulong serverID);
 
-    #region variable getters
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getVirtualServerKeyPair")]
+    private static extern uint GetVirtualServerKeyPair(ulong serverID, out IntPtr result);
+
     //Ferry: Connection Properties have no setters
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getVirtualServerConnectionVariableAsUInt64")]
-    extern static uint GetVirtualServerConnectionVariableAsulong(ulong serverID, ConnectionProperties flag, out IntPtr result);
+    private static extern uint GetVirtualServerConnectionVariableAsulong(ulong serverID, ConnectionProperties flag, out IntPtr result);
 
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getVirtualServerConnectionVariableAsDouble")]
-    extern static uint GetVirtualServerConnectionVariableAsDouble(ulong serverID, ConnectionProperties flag, out IntPtr result);
+    private static extern uint GetVirtualServerConnectionVariableAsDouble(ulong serverID, ConnectionProperties flag, out IntPtr result);
 
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getVirtualServerVariableAsInt")]
-    extern static uint GetVirtualServerVariableAsInt(ulong serverID, VirtualServerProperties flag, out IntPtr result);
+    private static extern uint GetVirtualServerVariableAsInt(ulong serverID, VirtualServerProperties flag, out IntPtr result);
 
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getVirtualServerVariableAsString")]
-    extern static uint GetVirtualServerVariableAsString(ulong serverID, VirtualServerProperties flag, out IntPtr result);
+    private static extern uint GetVirtualServerVariableAsString(ulong serverID, VirtualServerProperties flag, out IntPtr result);
 
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getChannelVariableAsInt")]
-    extern static uint GetChannelVariableAsInt(ulong serverID, ChannelProperties flag, out IntPtr result);
-
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getChannelVariableAsString")]
-    extern static uint GetChannelVariableAsString(ulong serverID, ChannelProperties flag, out IntPtr result);
-
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getClientVariableAsInt")]
-    extern static uint GetClientVariableAsInt(ulong serverID, ClientProperties flag, out IntPtr result);
-
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getClientVariableAsString")]
-    extern static uint GetClientVariableAsString(ulong serverID, ClientProperties flag, out IntPtr result);
-    #endregion
-
-    #region variable setters
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_setVirtualServerVariableAsInt")]
-    extern static uint SetVirtualServerVariableAsInt(ulong serverID, VirtualServerProperties flag, int value);
+    private static extern uint SetVirtualServerVariableAsInt(ulong serverID, VirtualServerProperties flag, int value);
 
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_setVirtualServerVariableAsString")]
-    extern static uint SetVirtualServerVariableAsString(ulong serverID, VirtualServerProperties flag, string value);
+    private static extern uint SetVirtualServerVariableAsString(ulong serverID, VirtualServerProperties flag, string value);
 
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_setChannelVariableAsInt")]
-    extern static uint SetChannelVariableAsInt(ulong serverID, ChannelProperties flag, int value);
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_flushVirtualServerVariable")]
+    private static extern uint FlushVirtualServerVariable(ulong serverID);
 
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_setChannelVariableAsString")]
-    extern static uint SetChannelVariableAsString(ulong serverID, ChannelProperties flag, string value);
-    
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_setClientVariableAsInt")]
-    extern static uint SetClientVariableAsInt(ulong serverID, ClientProperties flag, int value);
+    #endregion Server
 
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_setClientVariableAsString")]
-    extern static uint SetClientVariableAsString(ulong serverID, ClientProperties flag, string value);
-    #endregion
+    #region Channel
 
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_setClientWhisperList")]
-    extern static uint SetClientWhisperList(ulong serverID, ushort flag, ulong[] channels, ushort[] clients);
-
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getParentChannelOfChannel")]
-    extern static uint GetParentChannelOfChannel(ulong serverID, ulong channelID, out IntPtr result);
-
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getChannelOfClient")]
-    extern static uint GetChannelOfClient(ulong serverID, ulong channelID, out IntPtr result);
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getChannelList")]
+    private static extern uint GetChannelList(ulong serverID, out ulong[] result);
 
     //Ferry: take care the IntPtr[] here are ushort Array
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getChannelClientList")]
-    extern static uint GetChannelClientList(ulong serverID, ulong channelID, out IntPtr[] result);
+    private static extern uint GetChannelClientList(ulong serverID, ulong channelID, out IntPtr[] result);
 
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getClientList")]
-    extern static uint GetClientList(ulong serverID, out IntPtr[] result);
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getChannelOfClient")]
+    private static extern uint GetChannelOfClient(ulong serverID, ushort clientID, out ulong result);
 
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getChannelList")]
-    extern static uint GetChannelList(ulong serverID, out IntPtr[] result);
-
-    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_flushChannelCreation")]
-    extern static uint FlushChannelCreation(ulong serverID, ulong channelID, out IntPtr[] result);
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getParentChannelOfChannel")]
+    private static extern uint GetParentChannelOfChannel(ulong serverID, ulong channelID, out IntPtr result);
 
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_channelDelete")]
-    extern static uint ChannelDelete(ulong serverID, ulong channelID, int forceDelete);
+    private static extern uint ChannelDelete(ulong serverID, ulong channelID, int forceDelete);
 
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_channelMove")]
-    extern static uint ChannelMove(ulong serverID, ulong channelID, ulong newChannelParentID);
+    private static extern uint ChannelMove(ulong serverID, ulong channelID, ulong newChannelParentID);
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_flushChannelCreation")]
+    private static extern uint FlushChannelCreation(ulong serverID, ulong channelID, out IntPtr[] result);
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getChannelVariableAsInt")]
+    private static extern uint GetChannelVariableAsInt(ulong serverID, ChannelProperties flag, out IntPtr result);
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getChannelVariableAsString")]
+    private static extern uint GetChannelVariableAsString(ulong serverID, ChannelProperties flag, out IntPtr result);
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_setChannelVariableAsInt")]
+    private static extern uint SetChannelVariableAsInt(ulong serverID, ChannelProperties flag, int value);
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_setChannelVariableAsString")]
+    private static extern uint SetChannelVariableAsString(ulong serverID, ChannelProperties flag, string value);
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_flushChannelVariable")]
+    private static extern uint FlushChannelVariable(ulong serverID, ulong channelID);
+
+    #endregion Channel
+
+    #region Client
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getClientList")]
+    private static extern uint GetClientList(ulong serverID, out IntPtr[] result);
 
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_clientMove")]
-    extern static uint ClientMove(ulong serverID, ulong newChannelID, ushort[] clients);
-  
-    #endregion
+    private static extern uint ClientMove(ulong serverID, ulong newChannelID, ushort[] clients);
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getClientVariableAsInt")]
+    private static extern uint GetClientVariableAsInt(ulong serverID, ClientProperties flag, out IntPtr result);
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getClientVariableAsString")]
+    private static extern uint GetClientVariableAsString(ulong serverID, ClientProperties flag, out IntPtr result);
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_setClientVariableAsInt")]
+    private static extern uint SetClientVariableAsInt(ulong serverID, ClientProperties flag, int value);
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_setClientVariableAsString")]
+    private static extern uint SetClientVariableAsString(ulong serverID, ClientProperties flag, string value);
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_setClientWhisperList")]
+    private static extern uint SetClientWhisperList(ulong serverID, ushort flag, ulong[] channels, ushort[] clients);
+
+    [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_flushClientVariable")]
+    private static extern uint FlushClientVariable(ulong serverID, ushort clientID);
+
+    #endregion Client
+
+    #region Original Defitition in C
+
+    /*
+uint ts3server_freeMemory(void* pointer);
+
+uint ts3server_initServerLib(const struct ServerLibFunctions* functionPointers, int usedLogTypes, const char* logFileFolder);
+uint ts3server_destroyServerLib();
+uint ts3server_getServerLibVersion(char** result);
+uint ts3server_getServerLibVersionNumber(uint64* result);
+
+uint ts3server_setLogVerbosity(enum LogLevel logVerbosity);
+
+uint ts3server_getGlobalErrorMessage(unsigned int globalErrorCode, char** result);
+
+uint ts3server_getClientVariableAsInt(uint64 serverID, anyID clientID, enum ClientProperties flag, int* result);
+uint ts3server_getClientVariableAsString(uint64 serverID, anyID clientID, enum ClientProperties flag, char** result);
+uint ts3server_setClientVariableAsInt(uint64 serverID, anyID clientID, enum ClientProperties flag, int value);
+uint ts3server_setClientVariableAsString(uint64 serverID, anyID clientID, enum ClientProperties flag, const char* value);
+uint ts3server_flushClientVariable(uint64 serverID, anyID clientID);
+
+uint ts3server_setClientWhisperList(uint64 serverID, anyID clID, const uint64* channelID, const anyID* clientID);
+
+uint ts3server_getClientList(uint64 serverID, anyID** result);
+uint ts3server_getChannelOfClient(uint64 serverID, anyID clientID, uint64* result);
+uint ts3server_clientMove(uint64 serverID, uint64 newChannelID, const anyID* clientIDArray); #
+
+uint ts3server_getChannelVariableAsInt(uint64 serverID, uint64 channelID, enum ChannelProperties flag, int* result);
+uint ts3server_getChannelVariableAsString(uint64 serverID, uint64 channelID, enum ChannelProperties flag, char** result);
+uint ts3server_setChannelVariableAsInt(uint64 serverID, uint64 channelID, enum ChannelProperties flag, int value);
+uint ts3server_setChannelVariableAsString(uint64 serverID, uint64 channelID, enum ChannelProperties flag, const char* value);
+uint ts3server_flushChannelVariable(uint64 serverID, uint64 channelID);
+uint ts3server_flushChannelCreation(uint64 serverID, uint64 channelParentID, uint64* result);
+
+uint ts3server_getChannelList(uint64 serverID, uint64** result);
+uint ts3server_getChannelClientList(uint64 serverID, uint64 channelID, anyID** result);
+uint ts3server_getParentChannelOfChannel(uint64 serverID, uint64 channelID, uint64* result);
+
+uint ts3server_channelDelete(uint64 serverID, uint64 channelID, int force);
+uint ts3server_channelMove(uint64 serverID, uint64 channelID, uint64 newChannelParentID, uint64 newOrder);
+
+uint ts3server_getVirtualServerVariableAsInt(uint64 serverID, enum VirtualServerProperties flag, int* result);
+uint ts3server_getVirtualServerVariableAsString(uint64 serverID, enum VirtualServerProperties flag, char** result);
+uint ts3server_setVirtualServerVariableAsInt(uint64 serverID, enum VirtualServerProperties flag, int value);
+uint ts3server_setVirtualServerVariableAsString(uint64 serverID, enum VirtualServerProperties flag, const char* value);
+uint ts3server_flushVirtualServerVariable(uint64 serverID);
+
+uint ts3server_getVirtualServerConnectionVariableAsUInt64(uint64 serverID, enum ConnectionProperties flag, uint64* result);
+uint ts3server_getVirtualServerConnectionVariableAsDouble(uint64 serverID, enum ConnectionProperties flag, double* result);
+
+uint ts3server_getVirtualServerList(uint64** result);
+uint ts3server_stopVirtualServer(uint64 serverID);
+uint ts3server_createVirtualServer(unsigned int serverPort, const char* serverIp, const char* serverName, const char* serverKeyPair, unsigned int serverMaxClients, uint64* result);
+uint ts3server_getVirtualServerKeyPair(uint64 serverID, char** result);
+ */
+
+    #endregion Original Defitition in C
+
+    #endregion Server DLL Facade
+
     //REMEMBER TO TRY OPTIMZE THE DATA TYPE WHEN HAVE TIME, USING ALL ulong and uint is waste of memory.
 }

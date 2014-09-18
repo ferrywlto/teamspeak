@@ -13,13 +13,13 @@ namespace teamspeak
 {
     public partial class ServerForm : Form
     {
-        CustomTS3Server server;
+        TS3CustomServer server;
 
         public ServerForm()
         {
             InitializeComponent();
 
-            server = new CustomTS3Server();
+            server = new TS3CustomServerEx();
             server.NotificationNeeded += server_NotificationNeeded;
             server.ClientConnected += server_ClientConnected;
             server.ClientDisconnected += server_ClientDisconnected;

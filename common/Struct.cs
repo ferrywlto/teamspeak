@@ -7,22 +7,23 @@
 namespace teamspeak.definitions
 {
     //"C#, Visual Basic, and C++ compilers apply the Sequential layout value to structures by default.
+    //They must be struct, cannot be class due to SDK constraint.
     //[StructLayout(LayoutKind.Sequential)]
     public struct ServerEventCallbackMapper
     {
-        public VoiceDataEvent           onVoiceData;
-        public ClientStartTalkingEvent  onClientStartTalking;
-        public ClientStopTalkingEvent   onClientStopTalking;
-        public ClientConnectedEvent     onClientConnected;
-        public ClientDisconnectedEvent  onClientDisconnected;
-        public ClientMovedEvent         onClientMoved;
-        public ChannelCreatedEvent      onChannelCreated;
-        public ChannelEditedEvent       onChannelEdited;
-        public ChannelDeletedEvent      onChannelDeleted;
-        public ServerTextMessageEvent   onServerTextMessage;
-        public ChannelTextMessageEvent  onChannelTextMessage;
-        public UserLoggingMessageEvent  onUserLoggingMessage;
-        public AccountingErrorEvent     onAccountingError;
+        public VoiceDataEvent onVoiceData;
+        public ClientStartTalkingEvent onClientStartTalking;
+        public ClientStopTalkingEvent onClientStopTalking;
+        public ClientConnectedEvent onClientConnected;
+        public ClientDisconnectedEvent onClientDisconnected;
+        public ClientMovedEvent onClientMoved;
+        public ChannelCreatedEvent onChannelCreated;
+        public ChannelEditedEvent onChannelEdited;
+        public ChannelDeletedEvent onChannelDeleted;
+        public ServerTextMessageEvent onServerTextMessage;
+        public ChannelTextMessageEvent onChannelTextMessage;
+        public UserLoggingMessageEvent onUserLoggingMessage;
+        public AccountingErrorEvent onAccountingError;
 
         //[WARING] Ferry: Do NOT remove these two lines, they are required for the SDK DLL,
         //remove or comment out them will make the program crash when client connects!
@@ -63,54 +64,55 @@ struct ServerLibFunctions {
 
     public struct ClientEventCallbackMapper
     {
-        public ConnectStatusChangeEvent              onConnectStatusChange;
-        public ServerProtocolVersionEvent            onServerProtocolVersion;
-        public NewChannelEvent                       onNewChannel;
-        public NewChannelCreatedEvent                onNewChannelCreated;
-        public DelChannelEvent                       onDelChannel;
-        public ChannelMoveEvent                      onChannelMove;
-        public UpdateChannelEvent                    onUpdateChannel;
-        public UpdateChannelEditedEvent              onUpdateChannelEdited;
-        public UpdateClientEvent                     onUpdateClient;
-        public ClientMoveEvent                       onClientMove;
-        public ClientMoveSubscriptionEvent           onClientMoveSubscription;
-        public ClientMoveTimeoutEvent                onClientMoveTimeout;
-        public ClientMovedByOtherEvent               onClientMovedByOther;
-        public ClientKickFromChannelEvent            onClientKickFromChannel;
-        public ClientKickFromServerEvent             onClientKickFromServer;
-        public ClientIDsEvent                        onClientIDs;
-        public ClientIDsFinishedEvent                onClientIDsFinished;
-        public ServerEditedEvent                     onServerEdited;
-        public ServerUpdatedEvent                    onServerUpdated;
-        public ServerErrorEvent                      onServerError;
-        public ServerStopEvent                       onServerStop;
-        public TextMessageEvent                      onTextMessage;
-        public TalkStatusChangeEvent                 onTalkStatusChange;
-        public IgnoredWhisperEvent                   onIgnoredWhisper;
-        public ConnectionInfoEvent                   onConnectionInfo;
-        public ServerConnectionInfoEvent             onServerConnectionInfo;
-        public ChannelSubscribeEvent                 onChannelSubscribe;
-        public ChannelSubscribeFinishedEvent         onChannelSubscribeFinished;
-        public ChannelUnsubscribeEvent               onChannelUnsubscribe;
-        public ChannelUnsubscribeFinishedEvent       onChannelUnsubscribeFinished;
-        public ChannelDescriptionUpdateEvent         onChannelDescriptionUpdate;
-        public ChannelPasswordChangedEvent           onChannelPasswordChanged;
-        public PlaybackShutdownCompleteEvent         onPlaybackShutdownComplete;
+        public ConnectStatusChangeEvent onConnectStatusChange;
+        public ServerProtocolVersionEvent onServerProtocolVersion;
+        public NewChannelEvent onNewChannel;
+        public NewChannelCreatedEvent onNewChannelCreated;
+        public DelChannelEvent onDelChannel;
+        public ChannelMoveEvent onChannelMove;
+        public UpdateChannelEvent onUpdateChannel;
+        public UpdateChannelEditedEvent onUpdateChannelEdited;
+        public UpdateClientEvent onUpdateClient;
+        public ClientMoveEvent onClientMove;
+        public ClientMoveSubscriptionEvent onClientMoveSubscription;
+        public ClientMoveTimeoutEvent onClientMoveTimeout;
+        public ClientMovedByOtherEvent onClientMovedByOther;
+        public ClientKickFromChannelEvent onClientKickFromChannel;
+        public ClientKickFromServerEvent onClientKickFromServer;
+        public ClientIDsEvent onClientIDs;
+        public ClientIDsFinishedEvent onClientIDsFinished;
+        public ServerEditedEvent onServerEdited;
+        public ServerUpdatedEvent onServerUpdated;
+        public ServerErrorEvent onServerError;
+        public ServerStopEvent onServerStop;
+        public TextMessageEvent onTextMessage;
+        public TalkStatusChangeEvent onTalkStatusChange;
+        public IgnoredWhisperEvent onIgnoredWhisper;
+        public ConnectionInfoEvent onConnectionInfo;
+        public ServerConnectionInfoEvent onServerConnectionInfo;
+        public ChannelSubscribeEvent onChannelSubscribe;
+        public ChannelSubscribeFinishedEvent onChannelSubscribeFinished;
+        public ChannelUnsubscribeEvent onChannelUnsubscribe;
+        public ChannelUnsubscribeFinishedEvent onChannelUnsubscribeFinished;
+        public ChannelDescriptionUpdateEvent onChannelDescriptionUpdate;
+        public ChannelPasswordChangedEvent onChannelPasswordChanged;
+        public PlaybackShutdownCompleteEvent onPlaybackShutdownComplete;
 
         // Have to be exactly 44 delegates as well.
-        public SoundDeviceListChangedEvent           onSoundDeviceListChanged;
-        public EditPlaybackVoiceDataEvent            onEditPlaybackVoiceData;            
-        public EditPostProcessVoiceDataEvent         onEditPostProcessVoiceData;         
-        public EditMixedPlaybackVoiceDataEvent       onEditMixedPlaybackVoiceData;       
-        public EditCapturedVoiceDataEvent            onEditCapturedVoiceData;            
-        public Custom3dRolloffCalculationClientEvent onCustom3dRolloffCalculationClient; 
-        public Custom3dRolloffCalculationWaveEvent   onCustom3dRolloffCalculationWave;   
-        public UserLoggingMessageEvent               onUserLoggingMessage;
-        public CustomPacketEncryptEvent              onCustomPacketEncrypt;              
-        public CustomPacketDecryptEvent              onCustomPacketDecrypt;              
+        public SoundDeviceListChangedEvent onSoundDeviceListChanged;
+
+        public EditPlaybackVoiceDataEvent onEditPlaybackVoiceData;
+        public EditPostProcessVoiceDataEvent onEditPostProcessVoiceData;
+        public EditMixedPlaybackVoiceDataEvent onEditMixedPlaybackVoiceData;
+        public EditCapturedVoiceDataEvent onEditCapturedVoiceData;
+        public Custom3dRolloffCalculationClientEvent onCustom3dRolloffCalculationClient;
+        public Custom3dRolloffCalculationWaveEvent onCustom3dRolloffCalculationWave;
+        public UserLoggingMessageEvent onUserLoggingMessage;
+        public CustomPacketEncryptEvent onCustomPacketEncrypt;
+        public CustomPacketDecryptEvent onCustomPacketDecrypt;
 
         //seems missing this one?
-        public ProvisioningSlotRequestResultEvent    onProvisioningSlotRequestResult; 
+        public ProvisioningSlotRequestResultEvent onProvisioningSlotRequestResult;
 
         #region Original Struct Definition in C
 
@@ -164,4 +166,22 @@ struct ServerLibFunctions {
 
         #endregion Original Struct Definition in C
     }
+    public struct TS3_VECTOR
+    {
+        float x;        /* X coordinate in 3D space. */
+        float y;        /* Y coordinate in 3D space. */
+        float z;        /* Z coordinate in 3D space. */
+    } ;
+
+    #region Original Struct Definition in C
+
+    /*
+    typedef struct {
+        float x;        // X coordinate in 3D space. /
+        float y;        // Y coordinate in 3D space. /
+        float z;        // Z coordinate in 3D space. /
+    } TS3_VECTOR;
+        */
+
+    #endregion Original Struct Definition in C
 }
