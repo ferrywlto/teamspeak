@@ -14,11 +14,13 @@ namespace teamspeak
 {
     public class CustomTS3Client : TS3SDKConsumerBase
     {
-        //Ferry: Below are our own Delegates
-        public delegate void CustomServerMessageEvent(string message);
-
         //Ferry: [WARNING] _mapper must be public or AccessViolation will throw
         public ClientEventCallbackMapper _mapper;
+        //unless we want to connect more than one server simutaneouly, otherwise only one connection ID need to spawn,
+        //the same connection ID can be reused to connect and disconnect different servers
+        ulong _connectionID = 0;
+        string _identity = string.Empty;
+        ClientState _state = ClientState.STATE_NONE;
 
         #region Event Declarations
 
@@ -83,8 +85,6 @@ namespace teamspeak
         public event CustomPacketDecryptEvent CustomPacketDecrypt;
 
         public event CustomPacketEncryptEvent CustomPacketEncrypt;
-
-        public event CustomServerMessageEvent CustomServerMessage;
 
         public event DelChannelEvent DelChannel;
 
@@ -162,13 +162,12 @@ namespace teamspeak
 
         void onConnectStatusChange(ulong serverID, int newStatus, uint errorNumber)
         {
-            Console.WriteLine("Connect status changed: {0} {1} {2}", serverID, newStatus, errorNumber);
+            notify(string.Format("Connect status changed: {0} {1} {2}", serverID, newStatus, errorNumber));
             /* Failed to connect ? */
             if (newStatus == (int)ConnectStatus.STATUS_DISCONNECTED && errorNumber == Error.failed_connection_initialisation)
             {
-                Console.WriteLine("Looks like there is no server running, terminate!");
-                Console.ReadLine();
-                System.Environment.Exit(-1);
+                notifyError(string.Format("Looks like there is no server running, terminate!"));
+                return;
             }
             if (ConnectStatusChange != null)
                 ConnectStatusChange(serverID, newStatus, errorNumber);
@@ -176,34 +175,24 @@ namespace teamspeak
 
         void onServerProtocolVersion(ulong serverID, int protocolVersion)
         {
-            Console.WriteLine("Server protocol version: {0} {1}", serverID, protocolVersion);
+            notify(string.Format("Server protocol version: {0} {1}", serverID, protocolVersion));
             if (ServerProtocolVersion != null)
                 ServerProtocolVersion(serverID, protocolVersion);
         }
 
         void onNewChannel(ulong serverID, ulong channelID, ulong channelParentID)
         {
-            string name;
-            string errormsg;
-            uint error;
+            notify(string.Format("onNewChannelEvent: {0} {1} {2}", serverID, channelID, channelParentID));
+
+            uint result;
             IntPtr namePtr = IntPtr.Zero;
-            Console.WriteLine("onNewChannelEvent: {0} {1} {2}", serverID, channelID, channelParentID);
-            error = GetChannelVariableAsString(serverID, channelID, ChannelProperties.CHANNEL_NAME, out namePtr);
-            if (error == Error.ok)
-            {
-                name = Marshal.PtrToStringAnsi(namePtr);
-                Console.WriteLine("New channel: {0} {1}", channelID, name);
-                FreeMemory(namePtr);  /* Release dynamically allocated memory only if function succeeded */
-            }
+            if ((result = GetChannelVariableAsString(serverID, channelID, ChannelProperties.CHANNEL_NAME, out namePtr)) == Error.ok)
+                notify(string.Format("New channel: {0} {1}", channelID, getStringFromPointer(namePtr)));
             else
             {
-                IntPtr errormsgPtr = IntPtr.Zero;
-                if (GetErrorMessage(error, errormsgPtr) == Error.ok)
-                {
-                    errormsg = Marshal.PtrToStringAnsi(errormsgPtr);
-                    Console.WriteLine("Error getting channel name in onNewChannelEvent: {0}", errormsg);
-                    FreeMemory(errormsgPtr);
-                }
+                IntPtr errorMsgPtr = IntPtr.Zero;
+                if (GetErrorMessage(result, errorMsgPtr) == Error.ok)
+                    notifyError(string.Format("Error getting channel name in onNewChannelEvent: {0}", getStringFromPointer(errorMsgPtr)));
             }
             if (NewChannel != null)
                 NewChannel(serverID, channelID, channelParentID);
@@ -211,48 +200,44 @@ namespace teamspeak
 
         void onNewChannelCreated(ulong serverID, ulong channelID, ulong channelParentID, ushort invokerID, string invokerName, string invokerUniqueIdentifier)
         {
-            string name;
             IntPtr namePtr = IntPtr.Zero;
             /* Query channel name from channel ID */
-            uint error = GetChannelVariableAsString(serverID, channelID, ChannelProperties.CHANNEL_NAME, out namePtr);
-            if (error != Error.ok)
+            uint result = Error.ok;
+            if ((result = GetChannelVariableAsString(serverID, channelID, ChannelProperties.CHANNEL_NAME, out namePtr)) != Error.ok)
             {
+                notifyError(string.Format("Error reading client variable {0}", ChannelProperties.CHANNEL_NAME.ToString()));
                 return;
             }
-            name = Marshal.PtrToStringAnsi(namePtr);
-            Console.WriteLine("New channel created: {0}", name);
-            FreeMemory(namePtr);  /* Release dynamically allocated memory only if function succeeded */
+            notify(string.Format("New channel created: {0}", getStringFromPointer(namePtr));
             if (NewChannelCreated != null)
                 NewChannelCreated(serverID, channelID, channelParentID, invokerID, invokerName, invokerUniqueIdentifier);
         }
 
         void onDelChannel(ulong serverID, ulong channelID, ushort invokerID, string invokerName, string invokerUniqueIdentifier)
         {
-            Console.WriteLine("Channel ID {0} deleted by {1} ({2})", channelID, invokerName, invokerID);
+            notify(string.Format("Channel ID {0} deleted by {1} ({2})", channelID, invokerName, invokerID));
             if (DelChannel != null)
                 DelChannel(serverID, channelID, invokerID, invokerName, invokerUniqueIdentifier);
         }
 
         void onClientMove(ulong serverID, ushort clientID, ulong oldChannelID, ulong newChannelID, int visibility, string moveMessage)
         {
-            Console.WriteLine("ClientID {0} moves from channel {1} to {2} with message {3}", clientID, oldChannelID, newChannelID, moveMessage);
+            notify(string.Format("ClientID {0} moves from channel {1} to {2} with message {3}", clientID, oldChannelID, newChannelID, moveMessage));
             if (ClientMove != null)
                 ClientMove(serverID, clientID, oldChannelID, newChannelID, visibility, moveMessage);
         }
 
         void onClientMoveSubscription(ulong serverID, ushort clientID, ulong oldChannelID, ulong newChannelID, int visibility)
         {
-            string name;
             IntPtr namePtr = IntPtr.Zero;
             /* Query client nickname from ID */
-            uint error = GetClientVariableAsString(serverID, clientID, ClientProperties.CLIENT_NICKNAME, out namePtr);
-            if (error != Error.ok)
+            uint result = Error.ok;
+            if ((result = GetClientVariableAsString(serverID, clientID, ClientProperties.CLIENT_NICKNAME, out namePtr)) != Error.ok)
             {
+                notifyError(string.Format("Error reading client variable {0}", ClientProperties.CLIENT_NICKNAME.ToString()));
                 return;
             }
-            name = Marshal.PtrToStringAnsi(namePtr);
-            Console.WriteLine("New client: {0}", name);
-            FreeMemory(namePtr);  /* Release dynamically allocated memory only if function succeeded */
+            notify(string.Format("New client: {0}", getStringFromPointer(namePtr)));
 
             if (ClientMoveSubscription != null)
                 ClientMoveSubscription(serverID, clientID, oldChannelID, newChannelID, visibility);
@@ -260,7 +245,7 @@ namespace teamspeak
 
         void onClientMoveTimeout(ulong serverID, ushort clientID, ulong oldChannelID, ulong newChannelID, int visibility, string timeoutMessage)
         {
-            Console.WriteLine("ClientID {0} timeouts with message {1}", clientID, timeoutMessage);
+            notify(string.Format("ClientID {0} timeouts with message {1}", clientID, timeoutMessage));
 
             if (ClientMoveTimeout != null)
                 ClientMoveTimeout(serverID, clientID, oldChannelID, newChannelID, visibility, timeoutMessage);
@@ -268,25 +253,15 @@ namespace teamspeak
 
         void onTalkStatusChange(ulong serverID, int status, int isReceivedWhisper, ushort clientID)
         {
-            string name;
             IntPtr namePtr = IntPtr.Zero;
             /* Query client nickname from ID */
-            uint error = GetClientVariableAsString(serverID, clientID, ClientProperties.CLIENT_NICKNAME, out namePtr);
-            if (error != Error.ok)
+            uint result = Error.ok;
+            if((result = GetClientVariableAsString(serverID, clientID, ClientProperties.CLIENT_NICKNAME, out namePtr)) != Error.ok)
             {
+                notifyError(string.Format("Error reading client variable {0}", ClientProperties.CLIENT_NICKNAME.ToString()));
                 return;
             }
-            name = Marshal.PtrToStringAnsi(namePtr);
-            //if (status == (int)TalkStatus.STATUS_TALKING)
-            //{
-            //    Console.WriteLine("Client \"{0}\" {1} starts talking.", name, status == (int)TalkStatus.STATUS_TALKING ? "start" : "stop");
-            //}
-            //else
-            //{
-            //    Console.WriteLine("Client \"{0}\" stops talking.", name);
-            //}
-            Console.WriteLine("Client \"{0}\" {1} talking.", name, status == (int)TalkStatus.STATUS_TALKING ? "start" : "stop");
-            FreeMemory(namePtr);  /* Release dynamically allocated memory only if function succeeded */
+            notify(string.Format("Client \"{0}\" {1} talking.", getStringFromPointer(namePtr), status == (int)TalkStatus.STATUS_TALKING ? "start" : "stop"));
 
             if (TalkStatusChange != null)
                 TalkStatusChange(serverID, status, isReceivedWhisper, clientID);
@@ -294,26 +269,151 @@ namespace teamspeak
 
         void onIgnoredWhisper(ulong serverID, ushort clientID)
         {
-            Console.WriteLine("Ignored whisper: {0} {1}", serverID, clientID);
+            notify(string.Format("Ignored whisper: {0} {1}", serverID, clientID));
             if (IgnoredWhisper != null)
                 IgnoredWhisper(serverID, clientID);
         }
 
         void onServerError(ulong serverID, string errorMessage, uint error, string returnCode, string extraMessage)
         {
-            Console.WriteLine("Error for server {0}: {1}", serverID, errorMessage);
+            notify(string.Format("Error for server {0}: {1}", serverID, errorMessage));
             if (ServerError != null)
                 ServerError(serverID, errorMessage, error, returnCode, extraMessage);
         }
 
         void onServerStop(ulong serverID, string shutdownMessage)
         {
-            Console.WriteLine("Server {0} stopping: {1}", serverID, shutdownMessage);
+            notify(string.Format("Server {0} stopping: {1}", serverID, shutdownMessage));
             if (ServerStop != null)
                 ServerStop(serverID, shutdownMessage);
         }
-
         #endregion Event Handlers
+
+        public void connect(string nickName = "win7", string channelPassword = "", string defaultChannel = "", 
+            string serverIP = "localhost", string serverPassword = "secret", uint serverPort = 9987)
+        {
+            if (_state == ClientState.STATE_NONE)
+                initClientLib();
+            else if (_state == ClientState.STATE_CONNECTED)
+            {
+                notifyError("Already connected to a server.");
+                return;
+            }
+            /* Connect to server on localhost:9987 with nickname "client", no default channel, no default channel password and server password "secret" */
+            //error = ts3client.ts3client_startConnection(scHandlerID, identity, "54.68.20.34", 9987, "win7", ref defaultarray, "", "secret");
+            uint result = Error.ok;
+            if ((result = StartConnection(_connectionID, _identity, serverIP, serverPort, nickName, ref defaultChannel, channelPassword, serverPassword)) != Error.ok)
+            {
+                notifyError(string.Format("Error connecting to server: 0x{0:X4}", result));
+                return;
+            }
+            _state = ClientState.STATE_CONNECTED;
+        }
+        void initClientLib()
+        {
+            /* Initialize client lib with callbacks */
+            /* Resource path points to the SDK\bin directory to locate the soundbackends folder when running from Visual Studio. */
+            /* If you want to run directly from the SDK\bin directory, use an empty string instead to locate the soundbackends folder in the current directory. */
+            uint result = Error.ok;
+            if ((result = InitClientLib(ref this._mapper, null, LogTypes.LogType_FILE | LogTypes.LogType_CONSOLE, null, "")) != Error.ok)
+            {
+                notifyError(string.Format("Failed to init clientlib: {0}.", result));
+                return;
+            }
+            /* Spawn a new server connection handler using the default port and store the server ID */
+            if ((result = SpawnNewServerConnectionHandler(0, out _connectionID)) != Error.ok)
+            {
+                notifyError(string.Format("Error spawning server connection handler: {0}", result));
+                return;
+            }
+            /* Open default capture device */
+            /* Passing empty string for mode and null or empty string for device will open the default device */
+            if ((result = OpenCaptureDevice(_connectionID, "", null)) != Error.ok)
+            {
+                notifyError(string.Format("Error opening capture device: {0}", result));
+                return;
+            }
+            /* Open default playback device */
+            /* Passing empty string for mode and NULL or empty string for device will open the default device */
+            if ((result = OpenPlaybackDevice(_connectionID, "", null)) != Error.ok)
+            {
+                notifyError(string.Format("Error opening playback device: {0}", result));
+                return;
+            }
+
+            /* Create a new client identity */
+            /* In your real application you should do this only once, store the assigned identity locally and then reuse it. */
+            IntPtr identityPtr = IntPtr.Zero;
+            if ((result = CreateIdentity(out identityPtr)) != Error.ok)
+            {
+                notifyError(string.Format("Error creating identity: {0}", result));
+                return;
+            }
+            _identity = getStringFromPointer(identityPtr);
+            notify("identity:" + _identity);
+
+            /* Query and print client lib version */
+            IntPtr versionPtr = IntPtr.Zero;
+            if ((result = GetClientLibVersion(out versionPtr)) != Error.ok)
+            {
+                notifyError(string.Format("Failed to get clientlib version: {0}.", result));
+                return;
+            }
+            string version = getStringFromPointer(versionPtr);
+            notify(version);
+            notify("Client lib initialized and running");
+        }
+        public void disconnect()
+        {
+            if(_state != ClientState.STATE_CONNECTED)
+            {
+                notifyError("No server connected.");
+                return;
+            }
+            /* Disconnect from server */
+            uint result = Error.ok;
+            if ((result = StopConnection(_connectionID, "leaving")) != Error.ok)
+            {
+                notifyError(string.Format("Error stopping connection: {0}", result));
+                return;
+            }
+            _state = ClientState.STATE_DISCONNECTED;
+        }
+        public void kill()
+        {
+            if(_state == ClientState.STATE_CONNECTED)
+                disconnect();
+            else if(_state == ClientState.STATE_NONE)
+            {
+                notifyError("Nothing to kill.");
+                return;
+            }
+
+            /* Destroy server connection handler */
+            uint result = Error.ok;
+            if ((result = DestroyServerConnectionHandler(_connectionID)) != Error.ok)
+            {
+                notifyError(string.Format("Error destroying clientlib: {0}", result));
+                return;
+            }
+
+            /* Shutdown client lib */
+            if ((result = DestroyClientLib()) != Error.ok)
+            {
+                notifyError(string.Format("Failed to destroy clientlib: {0}", result));
+                return;
+            }
+            _state = ClientState.STATE_NONE;
+        }
+        #region Utilities
+        private string getStringFromPointer(IntPtr pointer)
+        {
+            string temp = string.Empty;
+            temp = Marshal.PtrToStringAnsi(pointer);
+            FreeMemory(pointer); /* Release dynamically allocated memory */
+            return temp;
+        }
+        #endregion Utilities
 
         #region DLL Import
 
@@ -329,7 +429,7 @@ namespace teamspeak
         /*Construction and Destruction*/
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_initClientLib")]
-        static extern uint InitClientLib(ref ClientEventCallbackMapper functionPointers, ref ClientEventCallbackMapper functionRarePointers, LogTypes usedLogTypes, string logFileFolder, string resourcesFolder);
+        static extern uint InitClientLib(ref ClientEventCallbackMapper functionPointers, object functionRarePointers, LogTypes usedLogTypes, string logFileFolder, string resourcesFolder);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_destroyClientLib")]
         static extern uint DestroyClientLib();
@@ -700,133 +800,5 @@ namespace teamspeak
         static extern uint RequestServerVariables(ulong serverID);
 
         #endregion DLL Import
-    }
-
-    internal class Program
-    {
-        private static void Main(string[] args)
-        {
-            /* Create struct for callback function pointers */
-            ClientEventCallbackMapper cbs = new ClientEventCallbackMapper();
-            client_callbackrare_struct cbs_rare = new client_callbackrare_struct(); // dummy
-
-            cbs.onConnectStatusChangeEvent_delegate = new onConnectStatusChangeEvent_type(callback.onConnectStatusChangeEvent);
-            cbs.onServerProtocolVersionEvent_delegate = new onServerProtocolVersionEvent_type(callback.onServerProtocolVersionEvent);
-            cbs.onNewChannelEvent_delegate = new onNewChannelEvent_type(callback.onNewChannelEvent);
-            cbs.onNewChannelCreatedEvent_delegate = new onNewChannelCreatedEvent_type(callback.onNewChannelCreatedEvent);
-            cbs.onDelChannelEvent_delegate = new onDelChannelEvent_type(callback.onDelChannelEvent);
-            cbs.onClientMoveEvent_delegate = new onClientMoveEvent_type(callback.onClientMoveEvent);
-            cbs.onClientMoveSubscriptionEvent_delegate = new onClientMoveSubscriptionEvent_type(callback.onClientMoveSubscriptionEvent);
-            cbs.onClientMoveTimeoutEvent_delegate = new onClientMoveTimeoutEvent_type(callback.onClientMoveTimeoutEvent);
-            cbs.onTalkStatusChangeEvent_delegate = new onTalkStatusChangeEvent_type(callback.onTalkStatusChangeEvent);
-            cbs.onIgnoredWhisperEvent_delegate = new onIgnoredWhisperEvent_type(callback.onIgnoredWhisperEvent);
-            cbs.onServerErrorEvent_delegate = new onServerErrorEvent_type(callback.onServerErrorEvent);
-
-            /* Initialize client lib with callbacks */
-            /* Resource path points to the SDK\bin directory to locate the soundbackends folder when running from Visual Studio. */
-            /* If you want to run directly from the SDK\bin directory, use an empty string instead to locate the soundbackends folder in the current directory. */
-            uint error = CustomTS3Client.ts3client_initClientLib(ref cbs, ref cbs_rare, LogTypes.LogType_FILE | LogTypes.LogType_CONSOLE, null, "");
-            if (error != Error.ok)
-            {
-                Console.WriteLine("Failed to init clientlib: {0}.", error);
-                return;
-            }
-
-            ulong scHandlerID = 0;
-            /* Spawn a new server connection handler using the default port and store the server ID */
-            error = CustomTS3Client.ts3client_spawnNewServerConnectionHandler(0, out scHandlerID);
-            if (error != Error.ok)
-            {
-                Console.WriteLine("Error spawning server connection handler: {0}", error);
-                return;
-            }
-
-            /* Open default capture device */
-            /* Passing empty string for mode and null or empty string for device will open the default device */
-            error = CustomTS3Client.ts3client_openCaptureDevice(scHandlerID, "", null);
-            if (error != Error.ok)
-            {
-                Console.WriteLine("Error opening capture device: {0}", error);
-            }
-
-            /* Open default playback device */
-            /* Passing empty string for mode and NULL or empty string for device will open the default device */
-            error = CustomTS3Client.ts3client_openPlaybackDevice(scHandlerID, "", null);
-            if (error != Error.ok)
-            {
-                Console.WriteLine("Error opening playback device: {0}", error);
-            }
-
-            /* Create a new client identity */
-            /* In your real application you should do this only once, store the assigned identity locally and then reuse it. */
-            IntPtr identityPtr = IntPtr.Zero;
-            error = CustomTS3Client.ts3client_createIdentity(out identityPtr);
-            if (error != Error.ok)
-            {
-                Console.WriteLine("Error creating identity: {0}", error);
-                return;
-            }
-            string identity = Marshal.PtrToStringAnsi(identityPtr);
-
-            string defaultarray = "";
-            /* Connect to server on localhost:9987 with nickname "client", no default channel, no default channel password and server password "secret" */
-            //error = ts3client.ts3client_startConnection(scHandlerID, identity, "54.68.20.34", 9987, "win7", ref defaultarray, "", "secret");
-            error = CustomTS3Client.ts3client_startConnection(scHandlerID, identity, "localhost", 9987, "win08r2", ref defaultarray, "", "secret");
-            if (error != Error.ok)
-            {
-                Console.WriteLine("Error connecting to server: 0x{0:X4}", error);
-                Console.ReadLine();
-                return;
-            }
-            CustomTS3Client.ts3client_freeMemory(identityPtr);  /* Release dynamically allocated memory */
-
-            Console.WriteLine("Client lib initialized and running");
-
-            /* Query and print client lib version */
-            IntPtr versionPtr = IntPtr.Zero;
-            error = CustomTS3Client.ts3client_getClientLibVersion(out versionPtr);
-            if (error != Error.ok)
-            {
-                Console.WriteLine("Failed to get clientlib version: {0}.", error);
-                return;
-            }
-            string version = Marshal.PtrToStringAnsi(versionPtr);
-            Console.WriteLine(version);
-            CustomTS3Client.ts3client_freeMemory(versionPtr); /* Release dynamically allocated memory */
-
-            Thread.Sleep(500);
-
-            /* Wait for user input */
-            Console.WriteLine("\n--- Press Return to disconnect from server and exit ---");
-            Console.ReadLine();
-
-            /* Disconnect from server */
-            error = CustomTS3Client.ts3client_stopConnection(scHandlerID, "leaving");
-            if (error != Error.ok)
-            {
-                Console.WriteLine("Error stopping connection: {0}", error);
-                return;
-            }
-
-            Thread.Sleep(200);
-
-            /* Destroy server connection handler */
-            error = CustomTS3Client.ts3client_destroyServerConnectionHandler(scHandlerID);
-            if (error != Error.ok)
-            {
-                Console.WriteLine("Error destroying clientlib: {0}", error);
-                return;
-            }
-
-            /* Shutdown client lib */
-            error = CustomTS3Client.ts3client_destroyClientLib();
-            if (error != Error.ok)
-            {
-                Console.WriteLine("Failed to destroy clientlib: {0}", error);
-                return;
-            }
-
-            Console.ReadLine();
-        }
     }
 }

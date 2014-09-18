@@ -1,5 +1,12 @@
 ﻿namespace teamspeak.definitions
 {
+    public enum ClientState 
+    { 
+        STATE_NONE = 0, 
+        STATE_CONNECTED, 
+        STATE_DISCONNECTED 
+    };
+
     public enum ServerState
     {
         STATE_NONE = 0,
@@ -153,6 +160,7 @@
         VIRTUALSERVER_CODEC_ENCRYPTION_MODE,    //available and always up-to-date when connected
         VIRTUALSERVER_ENDMARKER,
     };
+
     public enum ConnectionProperties
     {
         CONNECTION_PING = 0,                                        //average latency for a round trip through and back this connection
