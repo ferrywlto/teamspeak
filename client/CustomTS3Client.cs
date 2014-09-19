@@ -19,134 +19,66 @@ namespace teamspeak
         //unless we want to connect more than one server simutaneouly, otherwise only one connection ID need to spawn,
         //the same connection ID can be reused to connect and disconnect different servers
         ulong _connectionID = 0;
+        ulong _connectedServerID = 0;
         string _identity = string.Empty;
         ClientState _state = ClientState.STATE_NONE;
 
         #region Event Declarations
-
-        public event ChannelCreatedEvent ChannelCreated;
-
-        public event ChannelDeletedEvent ChannelDeleted;
-
-        public event ChannelDescriptionUpdateEvent ChannelDescriptionUpdate;
-
-        public event ChannelEditedEvent ChannelEdited;
-
-        public event ChannelMoveEvent ChannelMove;
-
-        public event ChannelPasswordChangedEvent ChannelPasswordChanged;
-
-        public event ChannelSubscribeEvent ChannelSubscribe;
-
-        public event ChannelSubscribeFinishedEvent ChannelSubscribeFinished;
-
-        public event ChannelTextMessageEvent ChannelTextMessage;
-
-        public event ChannelUnsubscribeEvent ChannelUnsubscribe;
-
-        public event ChannelUnsubscribeFinishedEvent ChannelUnsubscribeFinished;
-
-        public event ClientConnectedEvent ClientConnected;
-
-        public event ClientDisconnectedEvent ClientDisconnected;
-
-        public event ClientIDsEvent ClientIDs;
-
-        public event ClientIDsFinishedEvent ClientIDsFinished;
-
-        public event ClientKickFromChannelEvent ClientKickFromChannel;
-
-        public event ClientKickFromServerEvent ClientKickFromServer;
-
-        public event ClientMovedByOtherEvent ClientMovedByOther;
-
-        public event ClientMovedEvent ClientMoved;
-
-        public event ClientMoveEvent ClientMove;
-
-        public event ClientMoveSubscriptionEvent ClientMoveSubscription;
-
-        public event ClientMoveTimeoutEvent ClientMoveTimeout;
-
-        public event ClientStartTalkingEvent ClientStartTalking;
-
-        public event ClientStopTalkingEvent ClientStopTalking;
-
-        public event ConnectionInfoEvent ConnectionInfo;
-
         public event ConnectStatusChangeEvent ConnectStatusChange;
-
-        public event ConsoleCancelEventHandler ConsoleCancelEventHandler;
-
-        public event Custom3dRolloffCalculationClientEvent Custom3dRolloffCalculationClient;
-
-        public event Custom3dRolloffCalculationWaveEvent Custom3dRolloffCalculationWave;
-
-        public event CustomPacketDecryptEvent CustomPacketDecrypt;
-
-        public event CustomPacketEncryptEvent CustomPacketEncrypt;
-
-        public event DelChannelEvent DelChannel;
-
-        public event EditCapturedVoiceDataEvent EditCapturedVoiceData;
-
-        public event EditMixedPlaybackVoiceDataEvent EditMixedPlaybackVoiceData;
-
-        public event EditPlaybackVoiceDataEvent EditPlaybackVoiceData;
-
-        public event EditPostProcessVoiceDataEvent EditPostProcessVoiceData;
-
-        public event IgnoredWhisperEvent IgnoredWhisper;
-
-        public event NewChannelCreatedEvent NewChannelCreated;
-
-        public event NewChannelEvent NewChannel;
-
-        public event PlaybackShutdownCompleteEvent PlaybackShutdownComplete;
-
-        public event ProvisioningSlotRequestResultEvent ProvisioningSlotRequestResult;
-
-        public event ServerConnectionInfoEvent ServerConnectionInfo;
-
-        public event ServerEditedEvent ServerEdited;
-
-        public event ServerErrorEvent ServerError;
-
         public event ServerProtocolVersionEvent ServerProtocolVersion;
-
-        public event ServerStopEvent ServerStop;
-
-        public event ServerTextMessageEvent ServerTextMessage;
-
-        public event ServerUpdatedEvent ServerUpdated;
-
-        public event SoundDeviceListChangedEvent SoundDeviceListChanged;
-
-        public event TalkStatusChangeEvent TalkStatusChange;
-
-        public event TextMessageEvent TextMessage;
-
-        public event UpdateChannelEditedEvent UpdateChannelEdited;
-
+        public event NewChannelEvent NewChannel;
+        public event NewChannelCreatedEvent NewChannelCreated;
+        public event DelChannelEvent DelChannel;
+        public event ChannelMoveEvent ChannelMove;
         public event UpdateChannelEvent UpdateChannel;
-
+        public event UpdateChannelEditedEvent UpdateChannelEdited;
         public event UpdateClientEvent UpdateClient;
-
+        public event ClientMoveEvent ClientMove;
+        public event ClientMoveSubscriptionEvent ClientMoveSubscription;
+        public event ClientMoveTimeoutEvent ClientMoveTimeout;
+        public event ClientMovedByOtherEvent ClientMovedByOther;
+        public event ClientKickFromChannelEvent ClientKickFromChannel;
+        public event ClientKickFromServerEvent ClientKickFromServer;
+        public event ClientIDsEvent ClientIDs;
+        public event ClientIDsFinishedEvent ClientIDsFinished;
+        public event ServerEditedEvent ServerEdited;
+        public event ServerUpdatedEvent ServerUpdated;
+        public event ServerErrorEvent ServerError;
+        public event ServerStopEvent ServerStop;
+        public event TextMessageEvent TextMessage;
+        public event TalkStatusChangeEvent TalkStatusChange;
+        public event IgnoredWhisperEvent IgnoredWhisper;
+        public event ConnectionInfoEvent ConnectionInfo;
+        public event ServerConnectionInfoEvent ServerConnectionInfo;
+        public event ChannelSubscribeEvent ChannelSubscribe;
+        public event ChannelSubscribeFinishedEvent ChannelSubscribeFinished;
+        public event ChannelUnsubscribeEvent ChannelUnsubscribe;
+        public event ChannelUnsubscribeFinishedEvent ChannelUnsubscribeFinished;
+        public event ChannelDescriptionUpdateEvent ChannelDescriptionUpdate;
+        public event ChannelPasswordChangedEvent ChannelPasswordChanged;
+        public event PlaybackShutdownCompleteEvent PlaybackShutdownComplete;
+        public event SoundDeviceListChangedEvent SoundDeviceListChanged;
+        public event EditPlaybackVoiceDataEvent EditPlaybackVoiceData;
+        public event EditPostProcessVoiceDataEvent EditPostProcessVoiceData;
+        public event EditMixedPlaybackVoiceDataEvent EditMixedPlaybackVoiceData;
+        public event EditCapturedVoiceDataEvent EditCapturedVoiceData;
+        public event Custom3dRolloffCalculationClientEvent Custom3dRolloffCalculationClient;
+        public event Custom3dRolloffCalculationWaveEvent Custom3dRolloffCalculationWave;
         public event UserLoggingMessageEvent UserLoggingMessage;
-
-        public event VoiceDataEvent VoiceData;
-
-        public event VoiceRecordDataEvent VoiceRecordData;
-
+        public event CustomPacketDecryptEvent CustomPacketDecrypt;
+        public event CustomPacketEncryptEvent CustomPacketEncrypt;
+        public event ProvisioningSlotRequestResultEvent ProvisioningSlotRequestResult;
         #endregion Event Declarations
 
-        public void initMapper()
+        public ClientState CurrentState { get { return _state; } }
+
+        protected override void initMapper()
         {
             _mapper = new ClientEventCallbackMapper();
-            _mapper.onConnectStatusChange = onConnectStatusChange;
+            _mapper.onTextMessage = onTextMessage;
             _mapper.onConnectStatusChange = onConnectStatusChange;
             _mapper.onServerProtocolVersion = onServerProtocolVersion;
-            _mapper.onNewChannel = onNewChannel;
+            _mapper.onNewChannel = onGettingExistingChannelHirachry;
             _mapper.onNewChannelCreated = onNewChannelCreated;
             _mapper.onDelChannel = onDelChannel;
             _mapper.onClientMove = onClientMove;
@@ -158,13 +90,25 @@ namespace teamspeak
             _mapper.onServerStop = onServerStop;
         }
 
+        private void onTextMessage(ulong serverID, TextMessageTargetMode targetMode, ushort toID, ushort fromID, string fromName, string fromUniqueIdentifier, string message)
+        {
+            if (TextMessage != null)
+                TextMessage(serverID, targetMode, toID, fromID, fromName, fromUniqueIdentifier, message);
+        }
+
         #region Event Handlers
 
-        void onConnectStatusChange(ulong serverID, int newStatus, uint errorNumber)
+        void onConnectStatusChange(ulong serverID, ConnectStatus newStatus, uint errorNumber)
         {
-            notify(string.Format("Connect status changed: {0} {1} {2}", serverID, newStatus, errorNumber));
+            if (newStatus == ConnectStatus.STATUS_CONNECTED)
+            {
+                _state = ClientState.STATE_CONNECTED;
+                _connectedServerID = serverID;
+            }
+
+            notify(string.Format("Connect status changed: {0} {1} {2}", serverID, newStatus.ToString(), errorNumber));
             /* Failed to connect ? */
-            if (newStatus == (int)ConnectStatus.STATUS_DISCONNECTED && errorNumber == Error.failed_connection_initialisation)
+            if (newStatus == ConnectStatus.STATUS_DISCONNECTED && errorNumber == Error.failed_connection_initialisation)
             {
                 notifyError(string.Format("Looks like there is no server running, terminate!"));
                 return;
@@ -179,36 +123,42 @@ namespace teamspeak
             if (ServerProtocolVersion != null)
                 ServerProtocolVersion(serverID, protocolVersion);
         }
-
-        void onNewChannel(ulong serverID, ulong channelID, ulong channelParentID)
+        //void onNewChannelEvent <- confusing name
+        // this will call several times when client connect to get the whole existing channel hierarchy
+        // in parent-child style pair by pair
+        void onGettingExistingChannelHirachry(ulong serverID, ulong channelID, ulong channelParentID)
         {
             notify(string.Format("onNewChannelEvent: {0} {1} {2}", serverID, channelID, channelParentID));
 
-            uint result;
-            IntPtr namePtr = IntPtr.Zero;
-            if ((result = GetChannelVariableAsString(serverID, channelID, ChannelProperties.CHANNEL_NAME, out namePtr)) == Error.ok)
-                notify(string.Format("New channel: {0} {1}", channelID, getStringFromPointer(namePtr)));
-            else
-            {
-                IntPtr errorMsgPtr = IntPtr.Zero;
-                if (GetErrorMessage(result, errorMsgPtr) == Error.ok)
-                    notifyError(string.Format("Error getting channel name in onNewChannelEvent: {0}", getStringFromPointer(errorMsgPtr)));
-            }
+            //uint result;
+            //IntPtr namePtr = IntPtr.Zero;
+            //if ((result = GetChannelVariableAsString(serverID, channelID, ChannelProperties.CHANNEL_NAME, out namePtr)) == Error.ok)
+            //    notify(string.Format("New channel: {0} {1}", channelID, getStringFromPointer(namePtr)));
+            string value = getStringVariable(channelID, ChannelProperties.CHANNEL_NAME);
+            notify(string.Format("New channel: {0} {1}", channelID, value));
+            //else
+            //{
+            //    IntPtr errorMsgPtr = IntPtr.Zero;
+            //    if (GetErrorMessage(result, errorMsgPtr) == Error.ok)
+            //        notifyError(string.Format("Error getting channel name in onNewChannelEvent: {0}", getStringFromPointer(errorMsgPtr)));
+            //}
             if (NewChannel != null)
                 NewChannel(serverID, channelID, channelParentID);
         }
-
+        
         void onNewChannelCreated(ulong serverID, ulong channelID, ulong channelParentID, ushort invokerID, string invokerName, string invokerUniqueIdentifier)
         {
-            IntPtr namePtr = IntPtr.Zero;
-            /* Query channel name from channel ID */
-            uint result = Error.ok;
-            if ((result = GetChannelVariableAsString(serverID, channelID, ChannelProperties.CHANNEL_NAME, out namePtr)) != Error.ok)
-            {
-                notifyError(string.Format("Error reading client variable {0}", ChannelProperties.CHANNEL_NAME.ToString()));
-                return;
-            }
-            notify(string.Format("New channel created: {0}", getStringFromPointer(namePtr));
+            //IntPtr namePtr = IntPtr.Zero;
+            ///* Query channel name from channel ID */
+            //uint result = Error.ok;
+            //if ((result = GetChannelVariableAsString(serverID, channelID, ChannelProperties.CHANNEL_NAME, out namePtr)) != Error.ok)
+            //{
+            //    notifyError(string.Format("Error reading client variable {0}", ChannelProperties.CHANNEL_NAME.ToString()));
+            //    return;
+            //}
+            string value = getStringVariable(channelID, ChannelProperties.CHANNEL_NAME);
+            //notify(string.Format("New channel created: {0}", getStringFromPointer(namePtr)));
+            notify(string.Format("New channel created: {0}", value));
             if (NewChannelCreated != null)
                 NewChannelCreated(serverID, channelID, channelParentID, invokerID, invokerName, invokerUniqueIdentifier);
         }
@@ -289,7 +239,7 @@ namespace teamspeak
         }
         #endregion Event Handlers
 
-        public void connect(string nickName = "win7", string channelPassword = "", string defaultChannel = "", 
+        public void connect(string nickName = "win7", string defaultChannel = "", string channelPassword = "",  
             string serverIP = "localhost", string serverPassword = "secret", uint serverPort = 9987)
         {
             if (_state == ClientState.STATE_NONE)
@@ -302,12 +252,13 @@ namespace teamspeak
             /* Connect to server on localhost:9987 with nickname "client", no default channel, no default channel password and server password "secret" */
             //error = ts3client.ts3client_startConnection(scHandlerID, identity, "54.68.20.34", 9987, "win7", ref defaultarray, "", "secret");
             uint result = Error.ok;
-            if ((result = StartConnection(_connectionID, _identity, serverIP, serverPort, nickName, ref defaultChannel, channelPassword, serverPassword)) != Error.ok)
+            string[] channels = {defaultChannel, string.Empty};
+            if ((result = StartConnection(_connectionID, _identity, serverIP, serverPort, nickName, channels, channelPassword, serverPassword)) != Error.ok)
             {
                 notifyError(string.Format("Error connecting to server: 0x{0:X4}", result));
                 return;
             }
-            _state = ClientState.STATE_CONNECTED;
+
         }
         void initClientLib()
         {
@@ -331,14 +282,14 @@ namespace teamspeak
             if ((result = OpenCaptureDevice(_connectionID, "", null)) != Error.ok)
             {
                 notifyError(string.Format("Error opening capture device: {0}", result));
-                return;
+                //return;
             }
             /* Open default playback device */
             /* Passing empty string for mode and NULL or empty string for device will open the default device */
             if ((result = OpenPlaybackDevice(_connectionID, "", null)) != Error.ok)
             {
                 notifyError(string.Format("Error opening playback device: {0}", result));
-                return;
+                //return;
             }
 
             /* Create a new client identity */
@@ -381,8 +332,11 @@ namespace teamspeak
         }
         public void kill()
         {
-            if(_state == ClientState.STATE_CONNECTED)
-                disconnect();
+            if (_state == ClientState.STATE_CONNECTED)
+            {
+                notifyError("Please disconnect first.");
+                return;
+            }
             else if(_state == ClientState.STATE_NONE)
             {
                 notifyError("Nothing to kill.");
@@ -404,6 +358,156 @@ namespace teamspeak
                 return;
             }
             _state = ClientState.STATE_NONE;
+        }
+        public bool tell(string message, TextMessageTargetMode mode, ulong target = 0)
+        {
+            if(_state != ClientState.STATE_CONNECTED)
+            {
+                notifyError("Not connected.");
+                return false;
+            }
+            uint result = Error.ok;
+            switch(mode)
+            {
+                case TextMessageTargetMode.TextMessageTarget_SERVER:
+                    result = RequestSendServerTextMsg(_connectedServerID, message, null);
+                    break;
+                case TextMessageTargetMode.TextMessageTarget_CHANNEL:
+                    result = RequestSendChannelTextMsg(_connectedServerID, message, target, null);
+                    break;
+                case TextMessageTargetMode.TextMessageTarget_CLIENT:
+                    result = RequestSendPrivateTextMsg(_connectedServerID, message, (ushort)target, null);
+                    break;
+                default: break;
+            }
+            if (result != Error.ok)
+            {
+                notifyError("Error senting message.");
+                return false;
+            }
+            else
+                notify("Message sent.");
+            return true;
+        }
+        public bool setStringVariable(ulong serverID, ulong channelID, ChannelProperties property, string value)
+        {
+            if (SetChannelVariableAsString(_connectedServerID, channelID, property, value) != Error.ok)
+            {
+                notifyError(string.Format("Error setting variable: {0}", property.ToString()));
+                return false;
+            }
+            return true;
+        }
+        public bool setStringVariable(ulong serverID, ulong channelID, ClientProperties property, string value)
+        {
+            if (SetClientSelfVariableAsString(_connectedServerID, property, value) != Error.ok)
+            {
+                notifyError(string.Format("Error setting variable: {0}", property.ToString()));
+                return false;
+            }
+            return true;
+        }
+        public bool setIntVariable(ulong serverID, ulong channelID, ChannelProperties property, int value)
+        {
+            if (SetChannelVariableAsInt(_connectedServerID, channelID, property, value) != Error.ok)
+            {
+                notifyError(string.Format("Error setting variable: {0}", property.ToString()));
+                return false;
+            }
+            return true;
+        }
+        public bool setIntVariable(ulong serverID, ulong channelID, ClientProperties property, int value)
+        {
+            if (SetClientSelfVariableAsInt(_connectedServerID, property, value) != Error.ok)
+            {
+                notifyError(string.Format("Error setting variable: {0}", property.ToString()));
+                return false;
+            }
+            return true;
+        }
+        public string getStringVariable(ulong serverID, VirtualServerProperties property)
+        {
+            IntPtr valuePtr = IntPtr.Zero;
+            uint result = Error.ok;
+            if ((result = GetServerVariableAsString(_connectedServerID, property, out valuePtr)) != Error.ok)
+            {
+                notifyError(string.Format("Error getting variable: {0}", property.ToString()));
+                return string.Empty;
+            }
+            return getStringFromPointer(valuePtr);
+        }
+        public string getStringVariable(ulong channelID, ChannelProperties property)
+        {
+            IntPtr valuePtr = IntPtr.Zero;
+            uint result = Error.ok;
+            if ((result = GetChannelVariableAsString(_connectedServerID, channelID, property, out valuePtr)) != Error.ok)
+            {
+                notifyError(string.Format("Error getting variable: {0}", property.ToString()));
+                return string.Empty;
+            }
+            return getStringFromPointer(valuePtr);
+        }
+        public string getStringVariable(ushort clientID, ClientProperties property)
+        {
+            IntPtr valuePtr = IntPtr.Zero;
+            uint result = Error.ok;
+            if((result = GetClientVariableAsString(_connectedServerID, clientID, property, out valuePtr)) != Error.ok)
+            {
+                notifyError(string.Format("Error getting variable: {0}", property.ToString()));
+                return string.Empty;
+            }
+            return getStringFromPointer(valuePtr);
+        }
+        public string getStringVariable(ClientProperties property)
+        {
+            IntPtr valuePtr = IntPtr.Zero;
+            uint result = Error.ok;
+            if ((result = GetClientSelfVariableAsString(_connectedServerID, property, out valuePtr)) != Error.ok)
+            {
+                notifyError(string.Format("Error getting variable: {0}", property.ToString()));
+                return string.Empty;
+            }
+            return getStringFromPointer(valuePtr);
+        }
+        public int getIntVariable(ulong serverID, VirtualServerProperties property)
+        {
+            int value = 0;
+            if (GetServerVariableAsInt(_connectedServerID, property, out value) != Error.ok)
+            {
+                notifyError(string.Format("Error getting variable: {0}", property.ToString()));
+                return 0;
+            }
+            return value;
+        }
+        public int getIntVariable(ulong channelID, ChannelProperties property)
+        {
+            int value = 0;
+            if (GetChannelVariableAsInt(_connectedServerID, channelID, property, out value) != Error.ok)
+            {
+                notifyError(string.Format("Error getting variable: {0}", property.ToString()));
+                return 0;
+            }
+            return value;
+        }
+        public int getIntVariable(ushort clientID, ClientProperties property)
+        {
+            int value = 0;
+            if (GetClientVariableAsInt(_connectedServerID, clientID, property, out value) != Error.ok)
+            {
+                notifyError(string.Format("Error getting variable: {0}", property.ToString()));
+                return 0;
+            }
+            return value;
+        }
+        public int getIntVariable(ClientProperties property)
+        {
+            int value = 0;
+            if (GetClientSelfVariableAsInt(_connectedServerID, property, out value) != Error.ok)
+            {
+                notifyError(string.Format("Error getting variable: {0}", property.ToString()));
+                return 0;
+            }
+            return value;
         }
         #region Utilities
         private string getStringFromPointer(IntPtr pointer)
@@ -603,7 +707,7 @@ namespace teamspeak
         /*Interacting with the server*/
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_startConnection", CharSet = CharSet.Ansi)]
-        static extern uint StartConnection(ulong serverID, string identity, string ip, uint port, string nickname, ref string defaultChannelArray, string defaultChannelPassword, string serverPassword);
+        static extern uint StartConnection(ulong serverID, string identity, string ip, uint port, string nickname, string[] defaultChannelArray, string defaultChannelPassword, string serverPassword);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_stopConnection")]
         static extern uint StopConnection(ulong serverID, string quitMessage);
@@ -681,7 +785,7 @@ namespace teamspeak
         /*general info*/
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getClientID")]
-        static extern uint GetClientID(ulong serverID, ushort* result);
+        static extern uint GetClientID(ulong serverID, out ushort result);
 
         /*client connection info*/
 
@@ -717,7 +821,7 @@ namespace teamspeak
         static extern uint GetClientSelfVariableAsInt(ulong serverID, ClientProperties flag, out int result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getClientSelfVariableAsString")]
-        static extern uint GetClientSelfVariableAsString(ulong serverID, ClientProperties flag, out string result);
+        static extern uint GetClientSelfVariableAsString(ulong serverID, ClientProperties flag, out IntPtr result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_setClientSelfVariableAsInt")]
         static extern uint SetClientSelfVariableAsInt(ulong serverID, ClientProperties flag, int value);
@@ -753,6 +857,7 @@ namespace teamspeak
         static extern uint GetChannelVariableAsulong(ulong serverID, ulong channelID, ChannelProperties flag, out ulong result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getChannelVariableAsString")]
+        //static extern uint GetChannelVariableAsString(ulong serverID, ulong channelID, ChannelProperties flag, out IntPtr result);
         static extern uint GetChannelVariableAsString(ulong serverID, ulong channelID, ChannelProperties flag, out IntPtr result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getChannelIDFromChannelNames")]
@@ -794,7 +899,7 @@ namespace teamspeak
         static extern uint GetServerVariableAsulong(ulong serverID, VirtualServerProperties flag, out ulong result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getServerVariableAsString")]
-        static extern uint GetServerVariableAsString(ulong serverID, VirtualServerProperties flag, out string result);
+        static extern uint GetServerVariableAsString(ulong serverID, VirtualServerProperties flag, out IntPtr result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_requestServerVariables")]
         static extern uint RequestServerVariables(ulong serverID);

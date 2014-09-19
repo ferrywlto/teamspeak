@@ -13,18 +13,18 @@ namespace teamspeak
 {
     public partial class ServerForm : Form
     {
-        TS3CustomServer server;
+        TS3CustomServer _server;
 
         public ServerForm()
         {
             InitializeComponent();
 
-            server = new TS3CustomServerEx();
-            server.NotificationNeeded += server_NotificationNeeded;
-            server.ClientConnected += server_ClientConnected;
-            server.ClientDisconnected += server_ClientDisconnected;
-            server.ChannelTextMessage += server_ChannelTextMessage;
-            server.ServerTextMessage += server_ServerTextMessage;
+            _server = new TS3CustomServerEx();
+            _server.NotificationNeeded += server_NotificationNeeded;
+            _server.ClientConnected += server_ClientConnected;
+            _server.ClientDisconnected += server_ClientDisconnected;
+            _server.ChannelTextMessage += server_ChannelTextMessage;
+            _server.ServerTextMessage += server_ServerTextMessage;
         }
 
         void server_ServerTextMessage(ulong serverID, ushort invokerClientID, string textMessage)
@@ -51,32 +51,32 @@ namespace teamspeak
 
         private void btnStart_Click(object sender, EventArgs e)
         {
-            server.start();
+            _server.start();
         }
 
         private void btnStop_Click(object sender, EventArgs e)
         {
-            server.close();
+            _server.close();
         }
 
         private void ServerForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            server.close();
+            _server.close();
         }
 
-        public void server_NotificationNeeded(string msg)
+        public void server_NotificationNeeded(string message)
         {
-            updateText(msg);
+            updateText(message);
         }
 
         public delegate void setTextCallback(string message);
 
-        public void updateText(string msg)
+        public void updateText(string message)
         {
-            string message = DateTime.Now.ToString("[yyyyMMdd hh:mm:ss] ") + msg + Environment.NewLine;
+            message = DateTime.Now.ToString("[yyyyMMdd hh:mm:ss] ") + message + Environment.NewLine;
             if (this.InvokeRequired)
             {
-                Invoke(new setTextCallback(updateText), msg);
+                Invoke(new setTextCallback(updateText), message);
             }
             else
                 txtMessage.AppendText(message);

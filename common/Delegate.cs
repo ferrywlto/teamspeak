@@ -218,7 +218,7 @@ namespace teamspeak.definitions
     public delegate void TalkStatusChangeEvent(ulong serverID, int status, int isReceivedWhisper, ushort clientID);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void ConnectStatusChangeEvent(ulong serverID, int newStatus, uint errorNumber);
+    public delegate void ConnectStatusChangeEvent(ulong serverID, ConnectStatus newStatus, uint errorNumber);
     
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void ConnectionInfoEvent(ulong serverID, ushort clientID);
@@ -227,7 +227,7 @@ namespace teamspeak.definitions
     public delegate void IgnoredWhisperEvent(ulong serverID, ushort clientID);
     
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void TextMessageEvent(ulong serverID, ushort targetMode, ushort toID, ushort fromID, string fromName, string fromUniqueIdentifier, string message);
+    public delegate void TextMessageEvent(ulong serverID, TextMessageTargetMode targetMode, ushort toID, ushort fromID, string fromName, string fromUniqueIdentifier, string message);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void ProvisioningSlotRequestResultEvent(uint error, ulong requestHandle, string connectionKey);
