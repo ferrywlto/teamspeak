@@ -1,4 +1,3 @@
-E:\ts3temp\teamspeak\client\obj\x64\Debug\teamspeak.ClientForm.resources
 E:\ts3temp\teamspeak\client\obj\x64\Debug\ts3_client_custom.csproj.GenerateResource.Cache
 E:\ts3temp\teamspeak\client\bin\teamspeak.definitions.dll
 E:\ts3temp\teamspeak\client\bin\teamspeak.definitions.pdb
@@ -7,4 +6,4 @@ E:\ts3temp\teamspeak\client\bin\ts3_client_custom.exe
 E:\ts3temp\teamspeak\client\bin\ts3_client_custom.pdb
 E:\ts3temp\teamspeak\client\obj\x64\Debug\ts3_client_custom.exe
 E:\ts3temp\teamspeak\client\obj\x64\Debug\ts3_client_custom.pdb
-E:\ts3temp\teamspeak\client\obj\x64\Debug\ts3_client_custom.csprojResolveAssemblyReference.cache
+E:\ts3temp\teamspeak\client\obj\x64\Debug\teamspeak.Channel.resources

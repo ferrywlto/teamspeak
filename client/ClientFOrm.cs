@@ -12,9 +12,18 @@ using teamspeak.definitions;
 
 namespace teamspeak
 {
+    public class Channel
+    {
+        public ulong ID;
+        public string name;
+        public ulong parentID;
+    }
     public partial class ClientForm : Form
     {
         CustomTS3Client _client;
+        //channel name is unique, you cannot create two channel with same name, so can safe to use channel name as key to map channel ID
+        Dictionary<string, Channel> _channels = new Dictionary<string,Channel>();
+
         public ClientForm()
         {
             InitializeComponent();
@@ -24,8 +33,33 @@ namespace teamspeak
             _client.ErrorOccured += _client_ErrorOccured;
             _client.ConnectStatusChange += _client_ConnectStatusChange;
             _client.TextMessage += _client_TextMessage;
-        }
+            _client.NewChannel += _client_NewChannel;
 
+        }
+        
+        void _client_NewChannel(ulong serverID, ulong channelID, ulong channelParentID)
+        {
+            string channelName = _client.getStringVariable(channelID, ChannelProperties.CHANNEL_NAME);
+            if(channelName != string.Empty){
+                Channel channel = new Channel();
+                channel.ID = channelID;
+                channel.name = channelName;
+                channel.parentID = channelParentID;
+
+                addToChannelList(channel);
+            }
+        }
+        public delegate void AddChannelListCallback(Channel channel);
+        void addToChannelList(Channel channel)
+        {
+            if (this.InvokeRequired)
+                Invoke(new AddChannelListCallback(addToChannelList), channel);
+            else
+            {
+                _channels.Add(channel.name, channel);
+                listChannel.Items.Add(channel.name);
+            }
+        }
         void _client_TextMessage(ulong serverID, TextMessageTargetMode targetMode, ushort toID, ushort fromID, string fromName, string fromUniqueIdentifier, string message)
         {
             string msg = string.Format("[MSG|{0}|{1}|{2}|{3}|{4}]: {5}", serverID, targetMode.ToString(), toID, fromID, fromName, message);

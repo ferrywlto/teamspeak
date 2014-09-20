@@ -558,28 +558,36 @@ namespace teamspeak
         /*sound*/
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getPlaybackDeviceList")]
-        static extern uint GetPlaybackDeviceList(string modeID, out string[][] result);
+        //static extern uint GetPlaybackDeviceList(string modeID, out string[][] result);
+        static extern uint GetPlaybackDeviceList(string modeID, out IntPtr result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getCaptureDeviceList")]
-        static extern uint GetCaptureDeviceList(string modeID, out string[][] result);
+        //static extern uint GetCaptureDeviceList(string modeID, out string[][] result);
+        static extern uint GetCaptureDeviceList(string modeID, out IntPtr result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getPlaybackModeList")]
-        static extern uint GetPlaybackModeList(out string[] result);
+        //static extern uint GetPlaybackModeList(out string[] result);
+        static extern uint GetPlaybackModeList(out IntPtr result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getCaptureModeList")]
-        static extern uint GetCaptureModeList(out string[] result);
+        //static extern uint GetCaptureModeList(out string[] result);
+        static extern uint GetCaptureModeList(out IntPtr result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getDefaultPlaybackDevice")]
-        static extern uint GetDefaultPlaybackDevice(string modeID, out string[] result);
+        //static extern uint GetDefaultPlaybackDevice(string modeID, out string[] result);
+        static extern uint GetDefaultPlaybackDevice(string modeID, out IntPtr result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getDefaultCaptureDevice")]
-        static extern uint GetDefaultCaptureDevice(string modeID, out string[] result);
+        //static extern uint GetDefaultCaptureDevice(string modeID, out string[] result);
+        static extern uint GetDefaultCaptureDevice(string modeID, out IntPtr result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getDefaultPlayBackMode")]
-        static extern uint GetDefaultPlayBackMode(out string result);
+        //static extern uint GetDefaultPlayBackMode(out string result);
+        static extern uint GetDefaultPlayBackMode(out IntPtr result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getDefaultCaptureMode")]
-        static extern uint GetDefaultCaptureMode(out string result);
+        //static extern uint GetDefaultCaptureMode(out string result);
+        static extern uint GetDefaultCaptureMode(out IntPtr result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_openPlaybackDevice")]
         static extern uint OpenPlaybackDevice(ulong serverID, string modeID, string playbackDevice);
@@ -588,16 +596,20 @@ namespace teamspeak
         static extern uint OpenCaptureDevice(ulong serverID, string modeID, string captureDevice);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getCurrentPlaybackDeviceName")]
-        static extern uint GetCurrentPlaybackDeviceName(ulong serverID, out string result, out int isDefault);
+        //static extern uint GetCurrentPlaybackDeviceName(ulong serverID, out string result, out int isDefault);
+        static extern uint GetCurrentPlaybackDeviceName(ulong serverID, out IntPtr result, out int isDefault);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getCurrentPlayBackMode")]
-        static extern uint GetCurrentPlayBackMode(ulong serverID, out string result);
+        //static extern uint GetCurrentPlayBackMode(ulong serverID, out string result);
+        static extern uint GetCurrentPlayBackMode(ulong serverID, out IntPtr result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getCurrentCaptureDeviceName")]
-        static extern uint GetCurrentCaptureDeviceName(ulong serverID, out string result, out int isDefault);
+        //static extern uint GetCurrentCaptureDeviceName(ulong serverID, out string result, out int isDefault);
+        static extern uint GetCurrentCaptureDeviceName(ulong serverID, out IntPtr result, out int isDefault);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getCurrentCaptureMode")]
-        static extern uint GetCurrentCaptureMode(ulong serverID, out string result);
+        //static extern uint GetCurrentCaptureMode(ulong serverID, out string result);
+        static extern uint GetCurrentCaptureMode(ulong serverID, out IntPtr result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_initiateGracefulPlaybackShutdown")]
         static extern uint InitiateGracefulPlaybackShutdown(ulong serverID);
@@ -670,7 +682,8 @@ namespace teamspeak
         static extern uint GetPreProcessorInfoValueFloat(ulong serverID, string ident, out float result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getPreProcessorConfigValue")]
-        static extern uint GetPreProcessorConfigValue(ulong serverID, string ident, out string result);
+        //static extern uint GetPreProcessorConfigValue(ulong serverID, string ident, out string result);
+        static extern uint GetPreProcessorConfigValue(ulong serverID, string ident, out IntPtr result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_setPreProcessorConfigValue")]
         static extern uint SetPreProcessorConfigValue(ulong serverID, string ident, string value);
@@ -678,7 +691,8 @@ namespace teamspeak
         /*encoder*/
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getEncodeConfigValue")]
-        static extern uint GetEncodeConfigValue(ulong serverID, string ident, out string result);
+        //static extern uint GetEncodeConfigValue(ulong serverID, string ident, out string result);
+        static extern uint GetEncodeConfigValue(ulong serverID, string ident, out IntPtr result);
 
         /*playback*/
 
@@ -799,7 +813,8 @@ namespace teamspeak
         static extern uint GetConnectionVariableAsDouble(ulong serverID, ushort clientID, ConnectionProperties flag, out double result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getConnectionVariableAsString")]
-        static extern uint GetConnectionVariableAsString(ulong serverID, ushort clientID, ConnectionProperties flag, out string result);
+        //static extern uint GetConnectionVariableAsString(ulong serverID, ushort clientID, ConnectionProperties flag, out string result);
+        static extern uint GetConnectionVariableAsString(ulong serverID, ushort clientID, ConnectionProperties flag, out IntPtr result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_cleanUpConnectionInfo")]
         static extern uint CleanUpConnectionInfo(ulong serverID, ushort clientID);
@@ -861,7 +876,7 @@ namespace teamspeak
         static extern uint GetChannelVariableAsString(ulong serverID, ulong channelID, ChannelProperties flag, out IntPtr result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getChannelIDFromChannelNames")]
-        static extern uint GetChannelIDFromChannelNames(ulong serverID, out string channelNameArray, out ulong result);
+        static extern uint GetChannelIDFromChannelNames(ulong serverID, out IntPtr channelNameArray, out ulong result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_setChannelVariableAsInt")]
         static extern uint SetChannelVariableAsInt(ulong serverID, ulong channelID, ChannelProperties flag, int value);
