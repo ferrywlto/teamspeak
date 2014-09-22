@@ -73,13 +73,15 @@ namespace teamspeak
 
         public void updateText(string message)
         {
-            message = DateTime.Now.ToString("[yyyyMMdd hh:mm:ss] ") + message + Environment.NewLine;
             if (this.InvokeRequired)
             {
                 Invoke(new setTextCallback(updateText), message);
             }
             else
+            {
+                message = DateTime.Now.ToString("[yyyyMMdd hh:mm:ss] ") + message + Environment.NewLine;            
                 txtMessage.AppendText(message);
+            }
         }
     }
 }

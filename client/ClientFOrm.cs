@@ -12,18 +12,12 @@ using teamspeak.definitions;
 
 namespace teamspeak
 {
-    public class Channel
-    {
-        public ulong ID;
-        public string name;
-        public ulong parentID;
-    }
     public partial class ClientForm : Form
     {
         CustomTS3Client _client;
         //channel name is unique, you cannot create two channel with same name, so can safe to use channel name as key to map channel ID
         Dictionary<string, Channel> _channels = new Dictionary<string,Channel>();
-
+        Dictionary<string, ulong> _clients = new Dictionary<string, ulong>();
         public ClientForm()
         {
             InitializeComponent();
@@ -31,10 +25,50 @@ namespace teamspeak
             _client = new CustomTS3Client();
             _client.NotificationNeeded += _client_NotificationNeeded;
             _client.ErrorOccured += _client_ErrorOccured;
-            _client.ConnectStatusChange += _client_ConnectStatusChange;
             _client.TextMessage += _client_TextMessage;
             _client.NewChannel += _client_NewChannel;
+            _client.ConnectStatusChange += _client_ConnectStatusChange;
+            _client.ClientMove += _client_ClientMove;
+            _client.ClientMoveTimeout += _client_ClientMoveTimeout;
+        }
 
+        void _client_ClientMoveTimeout(ulong serverID, ushort clientID, ulong oldChannelID, ulong newChannelID, int visibility, string timeoutMessage)
+        {
+            string clientName = _client.getStringVariable(clientID, ClientProperties.CLIENT_NICKNAME);
+            _clients.Remove(clientName);
+            removeFromClientList(clientName);
+        }
+
+        void _client_ClientMove(ulong serverID, ushort clientID, ulong oldChannelID, ulong newChannelID, int visibility, string moveMessage)
+        {
+            string clientName = _client.getStringVariable(clientID, ClientProperties.CLIENT_NICKNAME);
+            //add him to client list
+            if(newChannelID == _client.CurrentChannelID)
+            {
+                _clients.Add(clientName, clientID);
+                addToClientList(clientName);
+            }
+                //remove client from list when he leaves
+            else if(oldChannelID == _client.CurrentChannelID)
+            {
+                _clients.Remove(clientName);
+                removeFromClientList(clientName);
+            }
+            clearClientSelection();
+        }
+
+        void _client_ConnectStatusChange(ulong serverID, ConnectStatus newStatus, uint errorNumber)
+        {
+            if(newStatus == ConnectStatus.STATUS_CONNECTION_ESTABLISHED)
+            { 
+                List<ushort> clients = _client.getChannelClientList();
+                for (int i = 0; i < clients.Count; i++)
+                {
+                    string clientName = _client.getStringVariable(clients[i], ClientProperties.CLIENT_NICKNAME);
+                    _clients.Add(clientName, clients[i]);
+                    addToClientList(clientName);
+                }
+            }
         }
         
         void _client_NewChannel(ulong serverID, ulong channelID, ulong channelParentID)
@@ -45,30 +79,50 @@ namespace teamspeak
                 channel.ID = channelID;
                 channel.name = channelName;
                 channel.parentID = channelParentID;
-
-                addToChannelList(channel);
+                _channels.Add(channel.name, channel);
+                addToChannelList(channel.name);
             }
         }
-        public delegate void AddChannelListCallback(Channel channel);
-        void addToChannelList(Channel channel)
+
+        public delegate void defaultCallback();
+        public delegate void AddTextToListCallback(string name);
+        void clearClientSelection()
         {
             if (this.InvokeRequired)
-                Invoke(new AddChannelListCallback(addToChannelList), channel);
+                Invoke(new defaultCallback(clearClientSelection));
             else
-            {
-                _channels.Add(channel.name, channel);
-                listChannel.Items.Add(channel.name);
-            }
+                listClient.ClearSelected();
         }
-        void _client_TextMessage(ulong serverID, TextMessageTargetMode targetMode, ushort toID, ushort fromID, string fromName, string fromUniqueIdentifier, string message)
+        void removeFromClientList(string clientName)
         {
-            string msg = string.Format("[MSG|{0}|{1}|{2}|{3}|{4}]: {5}", serverID, targetMode.ToString(), toID, fromID, fromName, message);
-            updateTextbox(msg, txtLog);
+            if (this.InvokeRequired)
+                Invoke(new AddTextToListCallback(removeFromClientList), clientName);
+            else
+                listClient.Items.Remove(clientName);
+        }
+        void addToClientList(string clientName)
+        {
+            if (this.InvokeRequired)
+                Invoke(new AddTextToListCallback(addToClientList), clientName);
+            else
+                listClient.Items.Add(clientName);
+        }
+        void addToChannelList(string channelName)
+        {
+            if (this.InvokeRequired)
+                Invoke(new AddTextToListCallback(addToChannelList), channelName);
+            else
+                listChannel.Items.Add(channelName);
         }
 
-        void _client_ConnectStatusChange(ulong serverID, ConnectStatus newStatus, uint errorNumber)
+        void _client_TextMessage(ulong serverID, TextMessageTargetMode targetMode, ushort toID, ushort fromID, string fromName, string fromUniqueIdentifier, string message)
         {
-            updateLabel(newStatus.ToString(), lblConnStatus);
+            //string msg = string.Format("[MSG|{0}|{1}|{2}|{3}|{4}]: {5}", serverID, targetMode.ToString(), toID, fromID, fromName, message);
+            if (targetMode == TextMessageTargetMode.TextMessageTarget_CLIENT && _client.CurrentClientID == toID)
+                message = string.Format("Whisper from {0}: {1}", fromName, message);
+            else if (targetMode == TextMessageTargetMode.TextMessageTarget_CLIENT && _client.CurrentClientID == fromID)
+                message = string.Format("Whisper to {0}: {1}", _client.getStringVariable(toID, ClientProperties.CLIENT_NICKNAME));
+            updateTextbox(message, txtLog);
         }
 
         void _client_ErrorOccured(string message)
@@ -83,6 +137,10 @@ namespace teamspeak
         private void btnDisconnect_Click(object sender, EventArgs e)
         {
             _client.disconnect();
+            listChannel.Items.Clear();
+            _channels.Clear();
+            listClient.Items.Clear();
+            _clients.Clear();
         }
 
         private void ClientForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -117,39 +175,43 @@ namespace teamspeak
             }
         }
 
-        private void txtIP_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void txtNickname_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void txtPassword_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void lblConnStatus_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void btnSend_Click(object sender, EventArgs e)
         {
+            string message = txtMsg.Text;
+            if (message == string.Empty) return;
+
             bool result = false;
             if (rdbServer.Checked)
-                result = _client.tell(txtMsg.Text, TextMessageTargetMode.TextMessageTarget_SERVER);
+                result = _client.tell(message, TextMessageTargetMode.TextMessageTarget_SERVER);
             else if (rdbChannel.Checked)
-                result = _client.tell(txtMsg.Text, TextMessageTargetMode.TextMessageTarget_CHANNEL, 0);
+                if (listChannel.SelectedItem == null)
+                    result = _client.tell(message, TextMessageTargetMode.TextMessageTarget_CHANNEL, _client.CurrentChannelID);
+                else
+                    result = _client.tell(message, TextMessageTargetMode.TextMessageTarget_CHANNEL, _channels[listChannel.SelectedItem.ToString()].ID);
             else if (rdbClient.Checked)
-                result = _client.tell(txtMsg.Text, TextMessageTargetMode.TextMessageTarget_CLIENT, 0);
-            if (result)
+                if (listClient.SelectedItem == null)
+                    result = _client.tell(message, TextMessageTargetMode.TextMessageTarget_CLIENT, _previousSelectedClientID);
+                else
+                    result = _client.tell(message, TextMessageTargetMode.TextMessageTarget_CLIENT, _clients[listClient.SelectedItem.ToString()]);
+            if (result) { 
                 txtMsg.Clear();
+                txtMsg.Focus();
+            }
+        }
+
+        ulong _previousSelectedClientID = 0;
+        private void listClient_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listClient.SelectedItem != null)
+                _previousSelectedClientID = _clients[listClient.SelectedItem.ToString()];
         }
 
 
+    }
+    public class Channel
+    {
+        public ulong ID;
+        public string name;
+        public ulong parentID;
     }
 }

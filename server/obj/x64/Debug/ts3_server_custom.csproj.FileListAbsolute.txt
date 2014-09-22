@@ -6,3 +6,4 @@ E:\ts3temp\teamspeak\server\bin\teamspeak.definitions.dll
 E:\ts3temp\teamspeak\server\bin\teamspeak.definitions.pdb
 E:\ts3temp\teamspeak\server\obj\x64\Debug\TS3CustomServer.exe
 E:\ts3temp\teamspeak\server\obj\x64\Debug\TS3CustomServer.pdb
+E:\ts3temp\teamspeak\server\obj\x64\Debug\ts3_server_custom.csprojResolveAssemblyReference.cache

@@ -6,4 +6,4 @@ E:\ts3temp\teamspeak\client\bin\ts3_client_custom.exe
 E:\ts3temp\teamspeak\client\bin\ts3_client_custom.pdb
 E:\ts3temp\teamspeak\client\obj\x64\Debug\ts3_client_custom.exe
 E:\ts3temp\teamspeak\client\obj\x64\Debug\ts3_client_custom.pdb
-E:\ts3temp\teamspeak\client\obj\x64\Debug\teamspeak.Channel.resources
+E:\ts3temp\teamspeak\client\obj\x64\Debug\teamspeak.ClientForm.resources

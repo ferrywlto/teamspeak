@@ -132,6 +132,7 @@
             this.listClient.Name = "listClient";
             this.listClient.Size = new System.Drawing.Size(192, 244);
             this.listClient.TabIndex = 9;
+            this.listClient.SelectedIndexChanged += new System.EventHandler(this.listClient_SelectedIndexChanged);
             // 
             // listChannel
             // 

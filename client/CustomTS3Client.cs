@@ -5,6 +5,8 @@
  */
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -20,6 +22,9 @@ namespace teamspeak
         //the same connection ID can be reused to connect and disconnect different servers
         ulong _connectionID = 0;
         ulong _connectedServerID = 0;
+        ulong _currentChannelID = 0;
+        ushort _currentClientID = 0;
+        string _currentClientName = string.Empty;
         string _identity = string.Empty;
         ClientState _state = ClientState.STATE_NONE;
 
@@ -70,6 +75,8 @@ namespace teamspeak
         public event ProvisioningSlotRequestResultEvent ProvisioningSlotRequestResult;
         #endregion Event Declarations
 
+        public ushort CurrentClientID { get { return _currentClientID; } }
+        public ulong CurrentChannelID { get { return _currentChannelID; } }
         public ClientState CurrentState { get { return _state; } }
 
         protected override void initMapper()
@@ -104,9 +111,18 @@ namespace teamspeak
             {
                 _state = ClientState.STATE_CONNECTED;
                 _connectedServerID = serverID;
+                ushort clientID;
+                if (GetClientID(_connectedServerID, out clientID) != Error.ok)
+                {
+                    notifyError("Cannot get client ID.");
+                    return;
+                }
+                _currentClientID = clientID;
             }
+            else if (newStatus == ConnectStatus.STATUS_CONNECTION_ESTABLISHED)
+                _currentClientName = getStringVariable(_currentClientID, ClientProperties.CLIENT_NICKNAME);
 
-            notify(string.Format("Connect status changed: {0} {1} {2}", serverID, newStatus.ToString(), errorNumber));
+            notify(string.Format("Connect status changed: ServerID:{0} Status:{1} Error:{2}", serverID, newStatus.ToString(), errorNumber));
             /* Failed to connect ? */
             if (newStatus == ConnectStatus.STATUS_DISCONNECTED && errorNumber == Error.failed_connection_initialisation)
             {
@@ -128,14 +144,12 @@ namespace teamspeak
         // in parent-child style pair by pair
         void onGettingExistingChannelHirachry(ulong serverID, ulong channelID, ulong channelParentID)
         {
-            notify(string.Format("onNewChannelEvent: {0} {1} {2}", serverID, channelID, channelParentID));
-
             //uint result;
             //IntPtr namePtr = IntPtr.Zero;
             //if ((result = GetChannelVariableAsString(serverID, channelID, ChannelProperties.CHANNEL_NAME, out namePtr)) == Error.ok)
             //    notify(string.Format("New channel: {0} {1}", channelID, getStringFromPointer(namePtr)));
             string value = getStringVariable(channelID, ChannelProperties.CHANNEL_NAME);
-            notify(string.Format("New channel: {0} {1}", channelID, value));
+            notify(string.Format("Channel List[{0}|{1}]", channelID, value));
             //else
             //{
             //    IntPtr errorMsgPtr = IntPtr.Zero;
@@ -170,13 +184,20 @@ namespace teamspeak
                 DelChannel(serverID, channelID, invokerID, invokerName, invokerUniqueIdentifier);
         }
 
+        // For other client join/move channel
         void onClientMove(ulong serverID, ushort clientID, ulong oldChannelID, ulong newChannelID, int visibility, string moveMessage)
         {
-            notify(string.Format("ClientID {0} moves from channel {1} to {2} with message {3}", clientID, oldChannelID, newChannelID, moveMessage));
+            string clientName = getStringVariable(clientID, ClientProperties.CLIENT_NICKNAME);
+            string oldChannelName = getStringVariable(oldChannelID, ChannelProperties.CHANNEL_NAME);
+            string newChannelName = getStringVariable(newChannelID, ChannelProperties.CHANNEL_NAME);
+            notify(string.Format("Client[{0}|{1}] moves from channel[{2}|{3}] to channel[{4}|{5}] with message {6}",
+                clientID, clientName, oldChannelID, oldChannelName, newChannelID, newChannelName, moveMessage));
+
             if (ClientMove != null)
                 ClientMove(serverID, clientID, oldChannelID, newChannelID, visibility, moveMessage);
         }
 
+        // For initial move of myself?
         void onClientMoveSubscription(ulong serverID, ushort clientID, ulong oldChannelID, ulong newChannelID, int visibility)
         {
             IntPtr namePtr = IntPtr.Zero;
@@ -187,7 +208,13 @@ namespace teamspeak
                 notifyError(string.Format("Error reading client variable {0}", ClientProperties.CLIENT_NICKNAME.ToString()));
                 return;
             }
-            notify(string.Format("New client: {0}", getStringFromPointer(namePtr)));
+
+            string oldChannelName = getStringVariable(oldChannelID, ChannelProperties.CHANNEL_NAME);
+            string newChannelName = getStringVariable(newChannelID, ChannelProperties.CHANNEL_NAME);
+            notify(string.Format("Client[{0}|{1}] moved from Channel[{2}|{3}] to Channel[{4}|{5}]", 
+                clientID, getStringFromPointer(namePtr), oldChannelID, oldChannelName, newChannelID, newChannelName));
+            /*IMPORTANT*/
+            _currentChannelID = newChannelID;
 
             if (ClientMoveSubscription != null)
                 ClientMoveSubscription(serverID, clientID, oldChannelID, newChannelID, visibility);
@@ -370,13 +397,23 @@ namespace teamspeak
             switch(mode)
             {
                 case TextMessageTargetMode.TextMessageTarget_SERVER:
+                    message = string.Format("[SERVER BROADCAST FROM {0}]: {1}", _currentClientName, message);
                     result = RequestSendServerTextMsg(_connectedServerID, message, null);
                     break;
                 case TextMessageTargetMode.TextMessageTarget_CHANNEL:
+                    message = string.Format("{0}: {1}", _currentClientName, message);
                     result = RequestSendChannelTextMsg(_connectedServerID, message, target, null);
                     break;
                 case TextMessageTargetMode.TextMessageTarget_CLIENT:
-                    result = RequestSendPrivateTextMsg(_connectedServerID, message, (ushort)target, null);
+                    if (target == _currentClientID)
+                    {
+                        notifyError("You cannot whisper to yourself");
+                        return false;
+                    }
+                    else
+                    {
+                        result = RequestSendPrivateTextMsg(_connectedServerID, message, (ushort)target, null);
+                    }
                     break;
                 default: break;
             }
@@ -388,6 +425,25 @@ namespace teamspeak
             else
                 notify("Message sent.");
             return true;
+        }
+
+        /* finally have to use unsafe code to solve the memory problem... */
+        public List<ushort> getChannelClientList()
+        {
+            List<ushort> clients = new List<ushort>();
+            unsafe
+            {
+                ushort* resultPtr;
+                GetChannelClientList(_connectedServerID, _currentChannelID, out resultPtr);
+                while (*resultPtr != 0)
+                {
+                    ushort clientID = *resultPtr;
+                    clients.Add(clientID);
+                    resultPtr++;
+                }
+                resultPtr = null;
+            }
+            return clients;
         }
         public bool setStringVariable(ulong serverID, ulong channelID, ChannelProperties property, string value)
         {
@@ -897,7 +953,7 @@ namespace teamspeak
         static extern uint GetChannelList(ulong serverID, out ulong[] result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getChannelClientList")]
-        static extern uint GetChannelClientList(ulong serverID, ulong channelID, out ushort[] result);
+        static extern unsafe uint GetChannelClientList(ulong serverID, ulong channelID, out ushort* result);
 
         [DllImport(DLL_FILE_NAME, EntryPoint = "ts3client_getParentChannelOfChannel")]
         static extern uint GetParentChannelOfChannel(ulong serverID, ulong channelID, out ulong result);
