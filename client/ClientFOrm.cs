@@ -17,7 +17,7 @@ namespace teamspeak
         CustomTS3Client _client;
         //channel name is unique, you cannot create two channel with same name, so can safe to use channel name as key to map channel ID
         Dictionary<string, Channel> _channels = new Dictionary<string,Channel>();
-        Dictionary<string, ulong> _clients = new Dictionary<string, ulong>();
+        Dictionary<string, ushort> _clients = new Dictionary<string, ushort>();
         public ClientForm()
         {
             InitializeComponent();
@@ -121,7 +121,7 @@ namespace teamspeak
             if (targetMode == TextMessageTargetMode.TextMessageTarget_CLIENT && _client.CurrentClientID == toID)
                 message = string.Format("Whisper from {0}: {1}", fromName, message);
             else if (targetMode == TextMessageTargetMode.TextMessageTarget_CLIENT && _client.CurrentClientID == fromID)
-                message = string.Format("Whisper to {0}: {1}", _client.getStringVariable(toID, ClientProperties.CLIENT_NICKNAME));
+                message = string.Format("Whisper to {0}: {1}", _client.getStringVariable(toID, ClientProperties.CLIENT_NICKNAME), message);
             updateTextbox(message, txtLog);
         }
 
@@ -199,11 +199,27 @@ namespace teamspeak
             }
         }
 
-        ulong _previousSelectedClientID = 0;
+        ushort _previousSelectedClientID = 0;
         private void listClient_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (listClient.SelectedItem != null)
                 _previousSelectedClientID = _clients[listClient.SelectedItem.ToString()];
+        }
+
+        private void btnMute_Click(object sender, EventArgs e)
+        {
+            if (listClient.SelectedItem == null)
+                _client.localMute(_previousSelectedClientID);
+            else
+                _client.localMute(_clients[listClient.SelectedItem.ToString()]);
+        }
+
+        private void btnUnmute_Click(object sender, EventArgs e)
+        {
+            if (listClient.SelectedItem == null)
+                _client.localUnmute(_previousSelectedClientID);
+            else
+                _client.localUnmute(_clients[listClient.SelectedItem.ToString()]);
         }
 
 

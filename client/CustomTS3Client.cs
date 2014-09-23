@@ -426,7 +426,53 @@ namespace teamspeak
                 notify("Message sent.");
             return true;
         }
+        public void localMute(ushort clientID)
+        {
+            if(clientID == _currentClientID)
+            {
+                notifyError("You cannot mute yourself.");
+                return;
+            }
+            else
+            {
+                //1 is muted, 0 is not-muted
+                if(getIntVariable(clientID, ClientProperties.CLIENT_IS_MUTED) == 1) {
+                    notifyError("You muted this client already.");
+                    return;
+                }
+            }
+            ushort[] clients = new ushort[2];
+            clients[0] = clientID;
+            clients[1] = 0; //terminated 0 is required
 
+            if(RequestMuteClients(_connectedServerID, clients, string.Empty) != Error.ok)
+                notifyError(string.Format("Error when attempting to mute client {0}", getStringVariable(clientID, ClientProperties.CLIENT_NICKNAME)));
+            else
+                notify(string.Format("You muted {0}", getStringVariable(clientID, ClientProperties.CLIENT_NICKNAME)));
+        }
+        public void localUnmute(ushort clientID)
+        {
+            if(clientID == _currentClientID)
+            {
+                notifyError("You cannot unmute yourself.");
+                return;
+            }
+            else
+            {
+                //1 is muted, 0 is not-muted
+                if(getIntVariable(clientID, ClientProperties.CLIENT_IS_MUTED) == 0) {
+                    notifyError("You did not mute this client.");
+                    return;
+                }
+            }
+            ushort[] clients = new ushort[2];
+            clients[0] = clientID;
+            clients[1] = 0; //terminated 0 is required
+            if(RequestUnmuteClients(_connectedServerID, clients, string.Empty) != Error.ok)
+                notifyError(string.Format("Error when attempting to unmute client {0}", getStringVariable(clientID, ClientProperties.CLIENT_NICKNAME)));
+            else
+                notify(string.Format("You unmuted {0}", getStringVariable(clientID, ClientProperties.CLIENT_NICKNAME)));
+        }
         /* finally have to use unsafe code to solve the memory problem... */
         public List<ushort> getChannelClientList()
         {

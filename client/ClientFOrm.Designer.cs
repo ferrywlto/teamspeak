@@ -44,6 +44,8 @@
             this.rdbServer = new System.Windows.Forms.RadioButton();
             this.txtChannel = new System.Windows.Forms.TextBox();
             this.txtChannelPassword = new System.Windows.Forms.TextBox();
+            this.btnMute = new System.Windows.Forms.Button();
+            this.btnUnmute = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnSend
@@ -190,11 +192,33 @@
             this.txtChannelPassword.Size = new System.Drawing.Size(100, 22);
             this.txtChannelPassword.TabIndex = 15;
             // 
+            // btnMute
+            // 
+            this.btnMute.Location = new System.Drawing.Point(526, 183);
+            this.btnMute.Name = "btnMute";
+            this.btnMute.Size = new System.Drawing.Size(75, 23);
+            this.btnMute.TabIndex = 16;
+            this.btnMute.Text = "Mute";
+            this.btnMute.UseVisualStyleBackColor = true;
+            this.btnMute.Click += new System.EventHandler(this.btnMute_Click);
+            // 
+            // btnUnmute
+            // 
+            this.btnUnmute.Location = new System.Drawing.Point(526, 222);
+            this.btnUnmute.Name = "btnUnmute";
+            this.btnUnmute.Size = new System.Drawing.Size(75, 23);
+            this.btnUnmute.TabIndex = 17;
+            this.btnUnmute.Text = "Unmute";
+            this.btnUnmute.UseVisualStyleBackColor = true;
+            this.btnUnmute.Click += new System.EventHandler(this.btnUnmute_Click);
+            // 
             // ClientForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(617, 501);
+            this.Controls.Add(this.btnUnmute);
+            this.Controls.Add(this.btnMute);
             this.Controls.Add(this.txtChannelPassword);
             this.Controls.Add(this.txtChannel);
             this.Controls.Add(this.rdbServer);
@@ -237,5 +261,7 @@
         private System.Windows.Forms.RadioButton rdbServer;
         private System.Windows.Forms.TextBox txtChannel;
         private System.Windows.Forms.TextBox txtChannelPassword;
+        private System.Windows.Forms.Button btnMute;
+        private System.Windows.Forms.Button btnUnmute;
     }
 }
