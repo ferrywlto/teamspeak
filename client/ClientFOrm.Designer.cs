@@ -46,6 +46,8 @@
             this.txtChannelPassword = new System.Windows.Forms.TextBox();
             this.btnMute = new System.Windows.Forms.Button();
             this.btnUnmute = new System.Windows.Forms.Button();
+            this.btnPlay = new System.Windows.Forms.Button();
+            this.btnStopSound = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnSend
@@ -91,7 +93,7 @@
             // 
             // btnConnect
             // 
-            this.btnConnect.Location = new System.Drawing.Point(526, 34);
+            this.btnConnect.Location = new System.Drawing.Point(526, 6);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Size = new System.Drawing.Size(87, 23);
             this.btnConnect.TabIndex = 5;
@@ -109,7 +111,7 @@
             // 
             // btnDisconnect
             // 
-            this.btnDisconnect.Location = new System.Drawing.Point(526, 62);
+            this.btnDisconnect.Location = new System.Drawing.Point(526, 34);
             this.btnDisconnect.Name = "btnDisconnect";
             this.btnDisconnect.Size = new System.Drawing.Size(87, 23);
             this.btnDisconnect.TabIndex = 7;
@@ -194,7 +196,7 @@
             // 
             // btnMute
             // 
-            this.btnMute.Location = new System.Drawing.Point(526, 183);
+            this.btnMute.Location = new System.Drawing.Point(526, 72);
             this.btnMute.Name = "btnMute";
             this.btnMute.Size = new System.Drawing.Size(75, 23);
             this.btnMute.TabIndex = 16;
@@ -204,7 +206,7 @@
             // 
             // btnUnmute
             // 
-            this.btnUnmute.Location = new System.Drawing.Point(526, 222);
+            this.btnUnmute.Location = new System.Drawing.Point(526, 101);
             this.btnUnmute.Name = "btnUnmute";
             this.btnUnmute.Size = new System.Drawing.Size(75, 23);
             this.btnUnmute.TabIndex = 17;
@@ -212,11 +214,33 @@
             this.btnUnmute.UseVisualStyleBackColor = true;
             this.btnUnmute.Click += new System.EventHandler(this.btnUnmute_Click);
             // 
+            // btnPlay
+            // 
+            this.btnPlay.Location = new System.Drawing.Point(526, 142);
+            this.btnPlay.Name = "btnPlay";
+            this.btnPlay.Size = new System.Drawing.Size(96, 23);
+            this.btnPlay.TabIndex = 18;
+            this.btnPlay.Text = "Play Sound";
+            this.btnPlay.UseVisualStyleBackColor = true;
+            this.btnPlay.Click += new System.EventHandler(this.btnPlay_Click);
+            // 
+            // btnStopSound
+            // 
+            this.btnStopSound.Location = new System.Drawing.Point(526, 171);
+            this.btnStopSound.Name = "btnStopSound";
+            this.btnStopSound.Size = new System.Drawing.Size(96, 23);
+            this.btnStopSound.TabIndex = 19;
+            this.btnStopSound.Text = "Stop Sound";
+            this.btnStopSound.UseVisualStyleBackColor = true;
+            this.btnStopSound.Click += new System.EventHandler(this.button1_Click);
+            // 
             // ClientForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(617, 501);
+            this.ClientSize = new System.Drawing.Size(625, 501);
+            this.Controls.Add(this.btnStopSound);
+            this.Controls.Add(this.btnPlay);
             this.Controls.Add(this.btnUnmute);
             this.Controls.Add(this.btnMute);
             this.Controls.Add(this.txtChannelPassword);
@@ -263,5 +287,7 @@
         private System.Windows.Forms.TextBox txtChannelPassword;
         private System.Windows.Forms.Button btnMute;
         private System.Windows.Forms.Button btnUnmute;
+        private System.Windows.Forms.Button btnPlay;
+        private System.Windows.Forms.Button btnStopSound;
     }
 }

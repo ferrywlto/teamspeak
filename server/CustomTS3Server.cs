@@ -102,8 +102,7 @@ public class TS3CustomServer : TS3SDKConsumerBase
     }
 
     private void onClientStopTalking(ulong serverID, ushort clientID)
-    {
-        if (ClientStopTalking != null) ClientStopTalking(serverID, clientID);
+    { if (ClientStopTalking != null) ClientStopTalking(serverID, clientID);
     }
 
     private void onAccountingError(ulong serverID, int errorCode)
@@ -233,14 +232,14 @@ public class TS3CustomServer : TS3SDKConsumerBase
         getStringFromPointer(versionPtr)));
     }
 
-    public void start(int serverPort = 9987, string bindIP = "0.0.0.0",
+    public bool start(int serverPort = 9987, string bindIP = "0.0.0.0",
         uint maxSlots = 32, string serverPassword = "secret",
         string serverName = "Testserver", string welcomeMessage = "Hello TeamSpeak 3")
     {
         if (_state == ServerState.STATE_STARTED)
         {
             notifyError("Server already started.");
-            return;
+            return false;
         }
         else if (_state == ServerState.STATE_NONE) // Ferry: Run once only, if not initialized
         {
@@ -257,7 +256,7 @@ public class TS3CustomServer : TS3SDKConsumerBase
         if ((result = CreateVirtualServer(serverPort, bindIP, serverName, _serverKey, maxSlots, out _serverID)) != Error.ok)
         {
             notifyError(string.Format("Error creating virtual server: {0}", getGlobalErrorMsg(result)));
-            return;
+            return false;
         }
 
         /* If we didn't load the keyPair before, query it from virtual server and save to file */
@@ -268,33 +267,34 @@ public class TS3CustomServer : TS3SDKConsumerBase
         if ((result = SetVirtualServerVariableAsString(_serverID, VirtualServerProperties.VIRTUALSERVER_WELCOMEMESSAGE, welcomeMessage)) != Error.ok)
         {
             notifyError(string.Format("Error setting server welcomemessage: {0}", result));
-            return;
+            return false;
         }
 
         /* Set server password */
         if ((result = SetVirtualServerVariableAsString(_serverID, VirtualServerProperties.VIRTUALSERVER_PASSWORD, serverPassword)) != Error.ok)
         {
             notifyError(string.Format("Error setting server password: {0}", result));
-            return;
+            return false;
         }
 
         /* Flush above two changes to server */
         if ((result = FlushVirtualServerVariable(_serverID)) != Error.ok)
         {
             notifyError(string.Format("Error flushing server variables: {0}", result));
-            return;
+            return false;
         }
 
         notify(string.Format("Server ID:{0} started successfully.", _serverID));
         _state = ServerState.STATE_STARTED;
+        return true;
     }
 
-    public void close()
+    public bool close()
     {
         if (_state != ServerState.STATE_STARTED)
         {
             notifyError("Server is not running.");
-            return;
+            return false;
         }
 
         uint result = Error.ok;
@@ -302,19 +302,145 @@ public class TS3CustomServer : TS3SDKConsumerBase
         if ((result = StopVirtualServer(_serverID)) != Error.ok)
         {
             notifyError(string.Format("Error stopping virtual server: {0}", result));
-            return;
+            return false;
         }
 
         /* Shutdown server lib */
         if ((result = DestroyServerLib()) != Error.ok)
         {
             notifyError(string.Format("Error destroying server lib: {0}", result));
-            return;
+            return false;
         }
         notify(string.Format("Server ID:{0} closed successfully.", _serverID));
         _state = ServerState.STATE_CLOSED;
+        return true;
     }
 
+    /*
+    public bool setStringVariable(ulong serverID, ulong channelID, ChannelProperties property, string value)
+    {
+        if (SetChannelVariableAsString(serverID, channelID, property, value) != Error.ok)
+        {
+            notifyError(string.Format("Error setting variable: {0}", property.ToString()));
+            return false;
+        }
+        return true;
+    }
+    public bool setStringVariable(ulong serverID, ulong channelID, ClientProperties property, string value)
+    {
+        if (SetClientSelfVariableAsString(serverID, property, value) != Error.ok)
+        {
+            notifyError(string.Format("Error setting variable: {0}", property.ToString()));
+            return false;
+        }
+        return true;
+    }
+    public bool setIntVariable(ulong serverID, ulong channelID, ChannelProperties property, int value)
+    {
+        if (SetChannelVariableAsInt(serverID, channelID, property, value) != Error.ok)
+        {
+            notifyError(string.Format("Error setting variable: {0}", property.ToString()));
+            return false;
+        }
+        return true;
+    }
+    public bool setIntVariable(ulong serverID, ulong channelID, ClientProperties property, int value)
+    {
+        if (SetClientSelfVariableAsInt(serverID, property, value) != Error.ok)
+        {
+            notifyError(string.Format("Error setting variable: {0}", property.ToString()));
+            return false;
+        }
+        return true;
+    }
+    public string getStringVariable(ulong serverID, VirtualServerProperties property)
+    {
+        IntPtr valuePtr = IntPtr.Zero;
+        uint result = Error.ok;
+        if ((result = GetServerVariableAsString(serverID, property, out valuePtr)) != Error.ok)
+        {
+            notifyError(string.Format("Error getting variable: {0}", property.ToString()));
+            return string.Empty;
+        }
+        return getStringFromPointer(valuePtr);
+    }
+     */
+    public string getStringVariable(ulong channelID, ChannelProperties property)
+    {
+        IntPtr valuePtr = IntPtr.Zero;
+        uint result = Error.ok;
+        if ((result = GetChannelVariableAsString(_serverID, channelID, property, out valuePtr)) != Error.ok)
+        {
+            notifyError(string.Format("Error getting variable: {0}", property.ToString()));
+            return string.Empty;
+        }
+        return getStringFromPointer(valuePtr);
+    }
+    
+    public string getStringVariable(ushort clientID, ClientProperties property)
+    {
+        IntPtr valuePtr = IntPtr.Zero;
+        uint result = Error.ok;
+        if ((result = GetClientVariableAsString(_serverID, clientID, property, out valuePtr)) != Error.ok)
+        {
+            notifyError(string.Format("Error getting variable: {0}", property.ToString()));
+            return string.Empty;
+        }
+        return getStringFromPointer(valuePtr);
+    }
+    /*
+    public string getStringVariable(ClientProperties property)
+    {
+        IntPtr valuePtr = IntPtr.Zero;
+        uint result = Error.ok;
+        if ((result = GetClientSelfVariableAsString(serverID, property, out valuePtr)) != Error.ok)
+        {
+            notifyError(string.Format("Error getting variable: {0}", property.ToString()));
+            return string.Empty;
+        }
+        return getStringFromPointer(valuePtr);
+    }
+    public int getIntVariable(ulong serverID, VirtualServerProperties property)
+    {
+        int value = 0;
+        if (GetServerVariableAsInt(serverID, property, out value) != Error.ok)
+        {
+            notifyError(string.Format("Error getting variable: {0}", property.ToString()));
+            return 0;
+        }
+        return value;
+    }
+    public int getIntVariable(ulong channelID, ChannelProperties property)
+    {
+        int value = 0;
+        if (GetChannelVariableAsInt(serverID, channelID, property, out value) != Error.ok)
+        {
+            notifyError(string.Format("Error getting variable: {0}", property.ToString()));
+            return 0;
+        }
+        return value;
+    }
+    public int getIntVariable(ushort clientID, ClientProperties property)
+    {
+        int value = 0;
+        if (GetClientVariableAsInt(serverID, clientID, property, out value) != Error.ok)
+        {
+            notifyError(string.Format("Error getting variable: {0}", property.ToString()));
+            return 0;
+        }
+        return value;
+    }
+    public int getIntVariable(ClientProperties property)
+    {
+        int value = 0;
+        if (GetClientSelfVariableAsInt(serverID, property, out value) != Error.ok)
+        {
+            notifyError(string.Format("Error getting variable: {0}", property.ToString()));
+            return 0;
+        }
+        return value;
+    }
+     * */
     #region Server DLL Facade
 
 #if x64
@@ -418,7 +544,7 @@ public class TS3CustomServer : TS3SDKConsumerBase
     private static extern uint GetChannelVariableAsInt(ulong serverID, ChannelProperties flag, out IntPtr result);
 
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getChannelVariableAsString")]
-    private static extern uint GetChannelVariableAsString(ulong serverID, ChannelProperties flag, out IntPtr result);
+    private static extern uint GetChannelVariableAsString(ulong serverID, ulong channelID, ChannelProperties flag, out IntPtr result);
 
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_setChannelVariableAsInt")]
     private static extern uint SetChannelVariableAsInt(ulong serverID, ChannelProperties flag, int value);
@@ -440,10 +566,10 @@ public class TS3CustomServer : TS3SDKConsumerBase
     private static extern uint ClientMove(ulong serverID, ulong newChannelID, ushort[] clients);
 
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getClientVariableAsInt")]
-    private static extern uint GetClientVariableAsInt(ulong serverID, ClientProperties flag, out IntPtr result);
+    private static extern uint GetClientVariableAsInt(ulong serverID, ushort clientID, ClientProperties flag, out IntPtr result);
 
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_getClientVariableAsString")]
-    private static extern uint GetClientVariableAsString(ulong serverID, ClientProperties flag, out IntPtr result);
+    private static extern uint GetClientVariableAsString(ulong serverID, ushort clientID, ClientProperties flag, out IntPtr result);
 
     [DllImport(DLL_FILE_NAME, EntryPoint = "ts3server_setClientVariableAsInt")]
     private static extern uint SetClientVariableAsInt(ulong serverID, ClientProperties flag, int value);

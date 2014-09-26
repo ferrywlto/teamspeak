@@ -491,6 +491,38 @@ namespace teamspeak
             }
             return clients;
         }
+        ulong _loopFileHandle = 0;
+        public void loopSound()
+        {
+            ulong handle = 0;
+            if(_loopFileHandle != 0)
+            {
+                notifyError("Close existing sound loop first.");
+                return;
+            }
+            if (PlayWaveFileHandle(_connectedServerID, "loop.wav", 1, out handle) != Error.ok)
+            {
+                notifyError("Error when attempt to play sound loop.");
+                return;
+            }
+            _loopFileHandle = handle;
+            notify("playing sound.");
+        }
+        public void stopLoopSound()
+        {
+            if (_loopFileHandle == 0)
+            {
+                notifyError("No sound is looping.");
+                return;
+            }
+            if (CloseWaveFileHandle(_connectedServerID, _loopFileHandle) != Error.ok)
+            {
+                notifyError("Error when closing sound loop.");
+                return;
+            }
+            _loopFileHandle = 0;
+            notify("stop playing sound.");
+        }
         public bool setStringVariable(ulong serverID, ulong channelID, ChannelProperties property, string value)
         {
             if (SetChannelVariableAsString(_connectedServerID, channelID, property, value) != Error.ok)

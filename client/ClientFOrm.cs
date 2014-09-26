@@ -222,6 +222,16 @@ namespace teamspeak
                 _client.localUnmute(_clients[listClient.SelectedItem.ToString()]);
         }
 
+        private void btnPlay_Click(object sender, EventArgs e)
+        {
+            _client.loopSound();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            _client.stopLoopSound();
+        }
+
 
     }
     public class Channel

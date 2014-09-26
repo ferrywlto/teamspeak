@@ -1,0 +1,8 @@
+E:\bin\ts3_client_custom.exe.config
+E:\ts3temp\teamspeak\client\obj\x64\Release\ts3_client_custom.csprojResolveAssemblyReference.cache
+E:\ts3temp\teamspeak\client\obj\x64\Release\teamspeak.ClientForm.resources
+E:\ts3temp\teamspeak\client\obj\x64\Release\ts3_client_custom.csproj.GenerateResource.Cache
+E:\bin\ts3_client_custom.exe
+E:\bin\ts3_client_custom.pdb
+E:\ts3temp\teamspeak\client\obj\x64\Release\ts3_client_custom.exe
+E:\ts3temp\teamspeak\client\obj\x64\Release\ts3_client_custom.pdb

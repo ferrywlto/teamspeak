@@ -2,3 +2,4 @@ E:\ts3temp\teamspeak\common\bin\Release\teamspeak.definitions.dll
 E:\ts3temp\teamspeak\common\bin\Release\teamspeak.definitions.pdb
 E:\ts3temp\teamspeak\common\obj\Release\teamspeak.definitions.dll
 E:\ts3temp\teamspeak\common\obj\Release\teamspeak.definitions.pdb
+E:\ts3temp\teamspeak\common\obj\Release\common.csprojResolveAssemblyReference.cache
